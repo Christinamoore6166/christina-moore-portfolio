@@ -2,129 +2,594 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* ------------------------------------------------------------------
+   Christina Moore: design tokens
+   Runtime source of truth. src/design/tokens.ts mirrors the values so
+   the style guide can list names, hex and contrast. Keep them in step.
+   ------------------------------------------------------------------ */
 
+/* Dark variant. An explicit data-theme on <html> wins; with none set the
+   OS preference decides. Both `dark:` utilities and `@variant dark`
+   resolve through this, so the system default is never a dead state. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:not([data-theme="light"], [data-theme="light"] *)) {
+      @slot;
+    }
+  }
+}
+
+@theme static {
+  /* ---------- Colour primitives ----------
+     The default Tailwind palette is removed on purpose: bg-white,
+     text-gray-500 and friends do not exist here. Only these do. */
+  --color-*: initial;
+
+  /* sampled from the existing site */
+  --color-ground: #efe9e4;
+  --color-surface: #f7f3ef;
+  --color-rose: #e3cfc5;
+  --color-tan: #a08466;
+  --color-chestnut: #6b2f22;
+  --color-brown: #4a2e24;
+
+  /* added: a floor and a counterweight */
+  --color-espresso: #2f211c;
+  --color-olive: #7c7a5e;
+  --color-clay: #d9b9a5;
+  --color-ink-invert: #ede4dc;
+
+  /* derived: not sampled; built for muted text and the dark theme */
+  --color-ink-muted: #74604f;
+  --color-ink-invert-muted: #bfafa3;
+  --color-espresso-raised: #3a2a24;
+  --color-espresso-lift: #4a3630;
+  --color-espresso-deep: #231813;
+
+  /* ---------- Type ---------- */
+  --font-*: initial;
+  --font-display:
+    var(--font-newsreader), "Iowan Old Style", "Palatino Linotype", Georgia,
+    serif;
+  --font-body:
+    var(--font-work-sans), system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --font-heading: var(--font-display);
+  --font-mono: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+
+  /* Fluid scale. Display steps are graphic objects and scale with the
+     viewport; text steps hold still. Steps live under --type-* and are
+     applied with the type-* utilities further down, which set size,
+     leading and tracking together. text-* is colour only. Keeping the
+     two apart stops class merging (cn / tailwind-merge) from reading
+     type-h2 and text-accent as a conflict and dropping one. */
+  --type-display-2xl: clamp(4.5rem, 2.25rem + 10vw, 12rem);
+  --type-display-2xl-leading: 0.88;
+  --type-display-2xl-tracking: -0.025em;
+  --type-display-xl: clamp(3.25rem, 1.75rem + 6.5vw, 8rem);
+  --type-display-xl-leading: 0.92;
+  --type-display-xl-tracking: -0.02em;
+  --type-display-lg: clamp(2.5rem, 1.5rem + 4vw, 5.5rem);
+  --type-display-lg-leading: 0.98;
+  --type-display-lg-tracking: -0.015em;
+  --type-display: clamp(2rem, 1.4rem + 2.4vw, 3.75rem);
+  --type-display-leading: 1.05;
+  --type-display-tracking: -0.01em;
+  --type-h1: clamp(1.875rem, 1.5rem + 1.5vw, 2.75rem);
+  --type-h1-leading: 1.1;
+  --type-h1-tracking: -0.01em;
+  --type-h2: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  --type-h2-leading: 1.15;
+  --type-h2-tracking: 0em;
+  --type-h3: clamp(1.25rem, 1.15rem + 0.4vw, 1.5rem);
+  --type-h3-leading: 1.25;
+  --type-h3-tracking: 0em;
+  --type-lead: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
+  --type-lead-leading: 1.5;
+  --type-lead-tracking: 0em;
+  --type-body: 1.0625rem;
+  --type-body-leading: 1.6;
+  --type-body-tracking: 0em;
+  --type-small: 0.875rem;
+  --type-small-leading: 1.5;
+  --type-small-tracking: 0em;
+  --type-caption: 0.75rem;
+  --type-caption-leading: 1.4;
+  --type-caption-tracking: 0em;
+  --type-eyebrow: 0.6875rem;
+  --type-eyebrow-leading: 1;
+  --type-eyebrow-tracking: 0.16em;
+
+  /* Tailwind text sizes: only the aliases registry components expect. */
+  --text-*: initial;
+  --text-xs: var(--type-caption);
+  --text-xs--line-height: var(--type-caption-leading);
+  --text-sm: var(--type-small);
+  --text-sm--line-height: var(--type-small-leading);
+  --text-base: var(--type-body);
+  --text-base--line-height: var(--type-body-leading);
+  --text-lg: var(--type-lead);
+  --text-lg--line-height: var(--type-lead-leading);
+  --text-xl: var(--type-h3);
+  --text-xl--line-height: var(--type-h3-leading);
+
+  --tracking-*: initial;
+  --tracking-display: -0.025em;
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0em;
+  --tracking-caps: 0.08em;
+  --tracking-eyebrow: 0.16em;
+
+  --leading-display: 0.9;
+
+  /* ---------- Space ----------
+     The base 4px scale stays. These four are the layout rhythm. */
+  --spacing-gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --spacing-stack: clamp(1.25rem, 2vw, 2rem);
+  --spacing-block: clamp(2.5rem, 5vw, 5rem);
+  --spacing-section: clamp(5rem, 10vw, 10rem);
+
+  --container-prose: 42rem;
+  --container-page: 88rem;
+
+  /* ---------- Shape ----------
+     No rounded cards. rounded-lg and up do not exist. */
+  --radius-*: initial;
+  --radius-none: 0px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-full: 9999px;
+
+  /* No drop shadows. Depth comes from colour steps and hairlines. */
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+
+  /* ---------- Motion ---------- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Semantic colours. Utilities read the live variable, so bg-page,
+   text-ink and text-accent follow the theme with no dark: prefix. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
+  --color-page: var(--page);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
   --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
+  --color-label: var(--label);
+  --color-on-label: var(--on-label);
+  --color-numeral: var(--numeral);
+  --color-on-numeral: var(--on-numeral);
+  --color-hover: var(--hover);
+  --color-on-hover: var(--on-hover);
+  --color-mark: var(--mark);
+  --color-rule: var(--rule);
+  --color-placeholder: var(--placeholder);
+  --color-inverse: var(--inverse);
+  --color-on-inverse: var(--on-inverse);
+  --color-on-inverse-soft: var(--on-inverse-soft);
   --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-primary-foreground: var(--on-primary);
+  --color-primary-hover: var(--primary-hover);
+
+  /* shadcn vocabulary, mapped onto the system so registry components
+     land in the palette. `accent` is chestnut here, not a subtle grey. */
+  --color-background: var(--page);
+  --color-foreground: var(--ink);
+  --color-secondary: var(--label);
+  --color-secondary-foreground: var(--on-label);
+  --color-muted: var(--raised);
+  --color-muted-foreground: var(--ink-soft);
+  --color-accent-foreground: var(--on-primary);
+  --color-card: var(--raised);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--raised);
+  --color-popover-foreground: var(--ink);
+  --color-border: var(--rule);
+  --color-input: var(--rule);
+  --color-ring: var(--accent);
+  --color-destructive: var(--accent);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  color-scheme: light;
+
+  --page: var(--color-ground);
+  --raised: var(--color-surface);
+  --ink: var(--color-brown);
+  --ink-soft: var(--color-ink-muted);
+  --accent: var(--color-chestnut);
+  --label: var(--color-rose);
+  --on-label: var(--color-chestnut);
+  --numeral: var(--color-tan);
+  --on-numeral: var(--color-espresso);
+  --hover: var(--color-clay);
+  --on-hover: var(--color-espresso);
+  --mark: var(--color-olive);
+  --rule: color-mix(in oklab, var(--color-brown) 22%, transparent);
+  --placeholder: var(--color-clay);
+  --inverse: var(--color-espresso);
+  --on-inverse: var(--color-ink-invert);
+  --on-inverse-soft: var(--color-ink-invert-muted);
+  --primary: var(--color-chestnut);
+  --on-primary: var(--color-ink-invert);
+  --primary-hover: var(--color-espresso);
+
+  /* Durations are not a Tailwind namespace; see the duration-* utilities. */
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+  --duration-slow: 480ms;
+  --duration-reveal: 720ms;
+  --reveal-distance: 14px;
+
+  /* Dark is built on espresso, not inverted. Chestnut cannot carry
+     headings on espresso (1.5:1), so rose takes the accent role and
+     chestnut becomes the label-bar fill under ink-invert. */
+  @variant dark {
+    color-scheme: dark;
+
+    --page: var(--color-espresso);
+    --raised: var(--color-espresso-raised);
+    --ink: var(--color-ink-invert);
+    --ink-soft: var(--color-ink-invert-muted);
+    --accent: var(--color-rose);
+    --label: var(--color-chestnut);
+    --on-label: var(--color-ink-invert);
+    --numeral: var(--color-tan);
+    --on-numeral: var(--color-espresso);
+    --hover: var(--color-espresso-lift);
+    --on-hover: var(--color-clay);
+    --mark: var(--color-olive);
+    --rule: color-mix(in oklab, var(--color-ink-invert) 16%, transparent);
+    --placeholder: var(--color-espresso-lift);
+    --inverse: var(--color-espresso-deep);
+    --on-inverse: var(--color-ink-invert);
+    --on-inverse-soft: var(--color-ink-invert-muted);
+    --primary: var(--color-rose);
+    --on-primary: var(--color-chestnut);
+    --primary-hover: var(--color-clay);
+  }
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-slow: 0ms;
+    --duration-reveal: 0ms;
+    --reveal-distance: 0px;
+  }
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  *,
+  ::before,
+  ::after {
+    border-color: var(--rule);
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
-    @apply font-sans;
+    font-family: var(--font-body);
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: var(--page);
+    color: var(--ink);
+    font-size: var(--type-body);
+    line-height: var(--type-body-leading);
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: var(--accent);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  strong,
+  b {
+    font-weight: 600;
+  }
+
+  ::selection {
+    background-color: var(--color-rose);
+    color: var(--color-chestnut);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+/* ---------- Layout utilities ---------- */
+
+/* The page frame: gutters and the max width. width: 100% matters: as a
+   flex item, auto margins alone would let wide content (a table with a
+   min-width) size the frame to its content and blow out the viewport. */
+@utility frame {
+  width: 100%;
+  max-width: var(--container-page);
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+}
+
+/* Break out of the frame so photography hits the viewport edge. */
+@utility bleed {
+  margin-inline: calc(var(--spacing-gutter) * -1);
+}
+@utility bleed-l {
+  margin-inline-start: calc(var(--spacing-gutter) * -1);
+}
+@utility bleed-r {
+  margin-inline-end: calc(var(--spacing-gutter) * -1);
+}
+
+/* Arch-topped frame for a portrait: semicircle top, square bottom. */
+@utility arch {
+  overflow: hidden;
+  border-start-start-radius: var(--radius-full);
+  border-start-end-radius: var(--radius-full);
+}
+
+/* The one parallax. The wrapper clips; the child is scaled so the drift
+   never shows an edge. <Parallax> sets --parallax from scroll position. */
+@utility parallax {
+  overflow: hidden;
+  & > * {
+    scale: 1.14;
+    translate: 0 var(--parallax, 0px);
+    will-change: translate;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    & > * {
+      scale: none;
+      translate: none;
+    }
+  }
+}
+
+/* ---------- Type utilities ----------
+   type-<step> sets size, leading and tracking. Colour is text-<name>. */
+@utility type-display-2xl {
+  font-size: var(--type-display-2xl);
+  line-height: var(--type-display-2xl-leading);
+  letter-spacing: var(--type-display-2xl-tracking);
+}
+@utility type-display-xl {
+  font-size: var(--type-display-xl);
+  line-height: var(--type-display-xl-leading);
+  letter-spacing: var(--type-display-xl-tracking);
+}
+@utility type-display-lg {
+  font-size: var(--type-display-lg);
+  line-height: var(--type-display-lg-leading);
+  letter-spacing: var(--type-display-lg-tracking);
+}
+@utility type-display {
+  font-size: var(--type-display);
+  line-height: var(--type-display-leading);
+  letter-spacing: var(--type-display-tracking);
+}
+@utility type-h1 {
+  font-size: var(--type-h1);
+  line-height: var(--type-h1-leading);
+  letter-spacing: var(--type-h1-tracking);
+}
+@utility type-h2 {
+  font-size: var(--type-h2);
+  line-height: var(--type-h2-leading);
+  letter-spacing: var(--type-h2-tracking);
+}
+@utility type-h3 {
+  font-size: var(--type-h3);
+  line-height: var(--type-h3-leading);
+  letter-spacing: var(--type-h3-tracking);
+}
+@utility type-lead {
+  font-size: var(--type-lead);
+  line-height: var(--type-lead-leading);
+  letter-spacing: var(--type-lead-tracking);
+}
+@utility type-body {
+  font-size: var(--type-body);
+  line-height: var(--type-body-leading);
+  letter-spacing: var(--type-body-tracking);
+}
+@utility type-small {
+  font-size: var(--type-small);
+  line-height: var(--type-small-leading);
+  letter-spacing: var(--type-small-tracking);
+}
+@utility type-caption {
+  font-size: var(--type-caption);
+  line-height: var(--type-caption-leading);
+  letter-spacing: var(--type-caption-tracking);
+}
+@utility type-eyebrow {
+  font-size: var(--type-eyebrow);
+  line-height: var(--type-eyebrow-leading);
+  letter-spacing: var(--type-eyebrow-tracking);
+}
+
+/* Small letter-spaced caps above a heading. */
+@utility eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--type-eyebrow);
+  line-height: var(--type-eyebrow-leading);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Rose bar with chestnut caps. Never white on rose. */
+@utility label-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75em;
+  background-color: var(--label);
+  color: var(--on-label);
+  padding: 0.6rem 0.9rem;
+  font-family: var(--font-body);
+  font-size: var(--type-eyebrow);
+  line-height: var(--type-eyebrow-leading);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Tan square with the section numeral on it. Tan is the fill, not the type. */
+@utility numeral-block {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background-color: var(--numeral);
+  color: var(--on-numeral);
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: lining-nums;
+}
+
+/* ---------- Motion utilities ---------- */
+
+@utility duration-fast {
+  transition-duration: var(--duration-fast);
+}
+@utility duration-base {
+  transition-duration: var(--duration-base);
+}
+@utility duration-slow {
+  transition-duration: var(--duration-slow);
+}
+@utility duration-reveal {
+  transition-duration: var(--duration-reveal);
+}
+
+/* Base transition for colour-only state changes. */
+@utility transition-ink {
+  transition-property:
+    color, background-color, border-color, text-decoration-color, opacity;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-standard);
+}
+
+/* Link: faint underline that turns olive and thickens on hover. The one
+   job olive has. The text colour does not change, so contrast holds. */
+@utility hover-underline {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+  transition:
+    text-decoration-color var(--duration-base) var(--ease-standard),
+    text-decoration-thickness var(--duration-base) var(--ease-standard);
+  &:hover,
+  &:focus-visible {
+    text-decoration-color: var(--mark);
+    text-decoration-thickness: 2px;
+  }
+}
+
+/* Block: fills with clay on hover (espresso-lift in dark). */
+@utility hover-fill {
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+  &:hover {
+    background-color: var(--hover);
+    color: var(--on-hover);
+  }
+}
+
+/* Image wrapper: slow 3% zoom, clipped. Off under reduced motion. */
+@utility hover-zoom {
+  overflow: hidden;
+  & img {
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  &:hover img {
+    transform: scale(1.03);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    & img,
+    &:hover img {
+      transition: none;
+      transform: none;
+    }
+  }
+}
+
+/* Anything: drops to 80% on hover. For thumbnails in a dense grid. */
+@utility hover-dim {
+  transition: opacity var(--duration-fast) var(--ease-standard);
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+/* Marquee band: two identical tracks placed edge to edge, translated by
+   exactly one track's width so the loop has no seam. Off under reduced
+   motion: the phrase still repeats to fill the band, it just holds still. */
+@keyframes marquee-scroll {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: -50% 0;
+  }
+}
+
+@utility marquee-track {
+  animation: marquee-scroll 42s linear infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Scroll reveal. Driven by <Reveal>, which flips data-reveal to "in".
+   Without JavaScript or with reduced motion, content is simply visible. */
+@layer components {
+  [data-reveal] {
+    opacity: 0;
+    translate: 0 var(--reveal-distance);
+    transition:
+      opacity var(--duration-reveal) var(--ease-out),
+      translate var(--duration-reveal) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  [data-reveal="in"] {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @media (prefers-reduced-motion: reduce), (scripting: none) {
+    [data-reveal] {
+      opacity: 1;
+      translate: none;
+      transition: none;
+    }
   }
 }

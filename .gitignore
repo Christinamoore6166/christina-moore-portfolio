@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# project-specific: unsorted/archive image directories (working sets, not deployed)
+/public/images/_unsorted/
+/public/images/_archive/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
