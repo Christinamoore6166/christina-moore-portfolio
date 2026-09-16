@@ -46,7 +46,6 @@ export function Reveal({
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (reduce.matches || typeof IntersectionObserver === "undefined") {
-      el.dataset.reveal = "in";
       return;
     }
 
@@ -56,7 +55,7 @@ export function Reveal({
           if (entry.isIntersecting) {
             el.dataset.reveal = "in";
             if (once) io.unobserve(el);
-          } else if (!once) {
+          } else {
             el.dataset.reveal = "out";
           }
         }
@@ -74,13 +73,7 @@ export function Reveal({
   } as CSSProperties;
 
   return (
-    <Tag
-      ref={ref}
-      id={id}
-      data-reveal="out"
-      className={className}
-      style={inline}
-    >
+    <Tag ref={ref} id={id} className={className} style={inline}>
       {children}
     </Tag>
   );

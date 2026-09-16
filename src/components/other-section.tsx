@@ -1,13 +1,19 @@
-import Image from "next/image";
 import { SITE } from "@/content/site";
-import { findImages, imageSrc } from "@/lib/images";
-import type { ImageAsset } from "@/content/images";
+import { findImages } from "@/lib/images";
+import { findStock, type ImageAsset } from "@/content/images";
 import { Reveal } from "@/components/motion/reveal";
 import { MarqueeBand } from "@/components/motion/marquee-band";
-import { Lightbox } from "@/components/motion/lightbox";
+import { EventFeature } from "@/components/event-feature";
+import { TileMarquee } from "@/components/tile-marquee";
+import { BackdropBand } from "@/components/backdrop-band";
 
 const other = SITE.sections.find((s) => s.id === "other")!;
 const cake = other.subSections?.find((s) => s.id === "cake");
+
+/* EventFeature's strip limit. Stated here rather than imported: every
+   export of a "use client" module reaches a server component as a client
+   reference, so the number itself is not available on this side. */
+const STRIP_MAX = 5;
 
 /** Selects specific numbered photos for an event, in the given order. */
 function pickFrom(event: string, numbers: number[]): ImageAsset[] {
@@ -22,8 +28,22 @@ function pickFrom(event: string, numbers: number[]): ImageAsset[] {
   });
 }
 
+/** The photo the manifest flags as the event's feature image. */
+function featured(event: string): ImageAsset {
+  const found = findImages("other", event).find((img) => img.featured);
+  if (!found) {
+    throw new Error(`No featured image flagged for other/${event}`);
+  }
+  return found;
+}
+
 export function OtherSection() {
-  const graphicDesign = findImages("other", "graphic-design");
+  // Manifest order decides the graphic design split: the first entry is
+  // the feature, the next five the strip, the rest run in the marquee.
+  // Reordering images.ts is all a curated order needs.
+  const [gdFeature, ...gdRest] = findImages("other", "graphic-design");
+  const gdStrip = gdRest.slice(0, STRIP_MAX);
+  const gdMarquee = gdRest.slice(STRIP_MAX);
 
   return (
     <>
@@ -50,12 +70,18 @@ export function OtherSection() {
           <CraftingThread />
         </Reveal>
 
-        {graphicDesign.length > 0 ? (
+        {gdFeature ? (
           <Reveal className="frame border-t border-rule py-section">
-            <h3 className="type-h1">{other.galleryHeading}</h3>
-            <div className="mt-block">
-              <Lightbox images={graphicDesign} />
-            </div>
+            <EventFeature
+              title={other.galleryHeading ?? ""}
+              featureImage={gdFeature}
+              strip={gdStrip}
+            />
+            {gdMarquee.length > 0 ? (
+              <div className="mt-block">
+                <TileMarquee images={gdMarquee} />
+              </div>
+            ) : null}
             {other.disclaimer ? (
               <p className="mt-block max-w-prose type-caption text-ink-soft">
                 {other.disclaimer}
@@ -74,8 +100,13 @@ function CakeThread({
   cake: NonNullable<typeof other.subSections>[number];
 }) {
   return (
-    <div className="border-t border-on-inverse-soft/20 bg-inverse px-gutter py-section text-on-inverse">
-      <div className="mx-auto flex max-w-2xl flex-col gap-stack text-center md:max-w-3xl">
+    <BackdropBand
+      image={findStock("buttercream")}
+      tint="espresso"
+      opacity={0.72}
+      className="border-t border-on-inverse-soft/20 py-section text-on-inverse"
+    >
+      <div className="frame mx-auto flex max-w-2xl flex-col gap-stack text-center md:max-w-3xl">
         <h3 className="font-display italic type-display text-on-inverse">
           {cake.title}
         </h3>
@@ -86,57 +117,32 @@ function CakeThread({
           {cake.body}
         </p>
       </div>
-    </div>
+    </BackdropBand>
   );
 }
 
 /**
- * Crafting and customized gifts. Leads with the strongest designed
- * object (a full custom garment design), then a supporting grid drawn
- * from curated gifting and the bachelorette work — which belongs here,
- * not as a separate thread, since it is exactly the "personalized
- * gifts and custom pieces for milestones" the copy describes.
+ * Crafting and customized gifts, as one EventFeature. The block's heading
+ * is the module's label, so it is not repeated above the image; the body
+ * copy follows the strip. The feature is the full custom garment design,
+ * the strip draws on curated gifting and the bachelorette work, which is
+ * exactly the "personalized gifts and custom pieces for milestones" the
+ * copy describes.
  */
 function CraftingThread() {
-  const lead = pickFrom("curated-gifting", [4])[0];
-  const rest = [
+  const strip = [
     ...pickFrom("curated-gifting", [1]),
-    ...pickFrom("bachelorette", [9, 8, 2, 6, 10]),
+    ...pickFrom("bachelorette", [9, 8, 2, 6]),
   ];
 
   return (
     <div>
-      <h3 className="type-h1">{other.subHeading}</h3>
-      <p className="mt-stack max-w-prose type-lead">{other.body}</p>
-
-      <div className="mt-block bleed">
-        <div className="hover-zoom aspect-[21/9] w-full bg-placeholder">
-          <Image
-            src={imageSrc(lead)}
-            alt={lead.alt}
-            width={lead.width}
-            height={lead.height}
-            sizes="100vw"
-            loading="lazy"
-            className="size-full object-cover"
-          />
-        </div>
-      </div>
-      <div className="mt-px grid grid-cols-2 gap-px bg-rule sm:grid-cols-3">
-        {rest.map((img) => (
-          <div key={img.webp} className="hover-zoom aspect-square bg-placeholder">
-            <Image
-              src={imageSrc(img)}
-              alt={img.alt}
-              width={img.width}
-              height={img.height}
-              sizes="(min-width: 640px) 33vw, 50vw"
-              loading="lazy"
-              className="size-full object-cover"
-            />
-          </div>
-        ))}
-      </div>
+      <EventFeature
+        title={other.subHeading ?? ""}
+        featureImage={featured("curated-gifting")}
+        strip={strip}
+      />
+      <p className="mt-block max-w-prose type-lead">{other.body}</p>
     </div>
   );
 }

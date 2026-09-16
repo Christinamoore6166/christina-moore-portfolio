@@ -7,6 +7,62 @@ export interface ImageAsset {
   width: number;
   height: number;
   alt: string;
+  /** The photo EventFeature leads with for its event. One per event. */
+  featured?: boolean;
+}
+
+/**
+ * Decorative backdrops for BackdropBand. Sourced stock photography, never
+ * a real event photo, so there is no event/thumbnail/lightbox shape to
+ * match. Alt is empty on purpose: BackdropBand always renders these behind
+ * foreground text, so they are decorative per WCAG. Never place one inside
+ * an EventFeature strip, the TileMarquee, or the lightbox.
+ */
+export interface StockImage {
+  id: 'tablescape' | 'buttercream' | 'linen' | 'nashville';
+  jpg: string;
+  width: number;
+  height: number;
+  alt: string;
+}
+
+export const stockImages: StockImage[] = [
+  {
+    id: 'tablescape',
+    jpg: 'public/images/stock/stock-tablescape.jpg',
+    width: 3472,
+    height: 4640,
+    alt: '',
+  },
+  {
+    id: 'buttercream',
+    jpg: 'public/images/stock/stock-buttercream.jpg',
+    width: 4000,
+    height: 5000,
+    alt: '',
+  },
+  {
+    id: 'linen',
+    jpg: 'public/images/stock/stock-linen.jpg',
+    width: 3448,
+    height: 4592,
+    alt: '',
+  },
+  {
+    id: 'nashville',
+    jpg: 'public/images/stock/stock-nashville.jpg',
+    width: 5177,
+    height: 3386,
+    alt: '',
+  },
+];
+
+export function findStock(id: StockImage['id']): StockImage {
+  const found = stockImages.find((s) => s.id === id);
+  if (!found) {
+    throw new Error(`Missing stock image ${id}`);
+  }
+  return found;
 }
 
 export const images: ImageAsset[] = [
@@ -42,6 +98,7 @@ export const images: ImageAsset[] = [
     width: 1013,
     height: 1350,
     alt: 'Holiday dinner table set for seven at night, black napkins tied with red ribbon on white plates, a red runner, and a wine bottle nestled in a berry-and-ice centerpiece, city lights through the window',
+    featured: true,
   },
   {
     section: 'branding',
@@ -174,6 +231,7 @@ export const images: ImageAsset[] = [
     width: 1350,
     height: 1800,
     alt: 'Overhead view of a long table set with cream scalloped plates, pink Happy Galentine\'s Day cards, gold flatware, and a center line of red roses flanked by blush and white roses',
+    featured: true,
   },
   {
     section: 'branding',
@@ -728,6 +786,7 @@ export const images: ImageAsset[] = [
     width: 1350,
     height: 1800,
     alt: 'Overhead place setting on a woven charger with a scalloped plate, a Friends Giving card reading "I am thankful for...", a red ribbon tie, and a white napkin lettered with a guest\'s name',
+    featured: true,
   },
   {
     section: 'branding',
@@ -1120,6 +1179,7 @@ export const images: ImageAsset[] = [
     width: 1800,
     height: 1350,
     alt: 'Custom UConn Huskies design with "Connecticut" arched above and "Huskies" arched below a husky mascot illustration, over a repeating UCONN text pattern',
+    featured: true,
   },
 
   // Other - Graphic Design Portfolio

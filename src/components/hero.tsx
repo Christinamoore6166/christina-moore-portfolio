@@ -3,6 +3,7 @@ import { SITE } from "@/content/site";
 import { findImages, imageSrc } from "@/lib/images";
 import { Parallax } from "@/components/motion/parallax";
 import { Reveal } from "@/components/motion/reveal";
+import { LinkedInButton } from "@/components/linkedin-button";
 
 /**
  * Hero. The name is a graphic object: caps roman with the last word
@@ -46,15 +47,17 @@ export function Hero() {
               width={portrait.width}
               height={portrait.height}
               sizes="(min-width: 768px) 38vw, 80vw"
-              preload
+              loading="eager"
+              fetchPriority="high"
               className="size-full object-cover"
             />
           </Parallax>
         ) : null}
 
-        <p className="col-start-1 col-end-13 row-start-4 mt-stack max-w-prose type-lead md:col-end-7 md:row-start-3 md:mt-block md:self-end">
-          {SITE.hero.subline}
-        </p>
+        <div className="col-start-1 col-end-13 row-start-4 mt-stack flex flex-col items-start gap-stack md:col-end-7 md:row-start-3 md:mt-block md:self-end">
+          <p className="max-w-prose type-lead">{SITE.hero.subline}</p>
+          <LinkedInButton />
+        </div>
       </Reveal>
     </header>
   );

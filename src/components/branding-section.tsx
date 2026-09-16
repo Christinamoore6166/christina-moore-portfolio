@@ -1,9 +1,10 @@
-import Image from "next/image";
 import { SITE } from "@/content/site";
-import { findImages, imageSrc } from "@/lib/images";
-import type { ImageAsset } from "@/content/images";
+import { findImages } from "@/lib/images";
+import { findStock, type ImageAsset } from "@/content/images";
 import { Reveal } from "@/components/motion/reveal";
 import { MarqueeBand } from "@/components/motion/marquee-band";
+import { EventFeature } from "@/components/event-feature";
+import { BackdropBand } from "@/components/backdrop-band";
 
 const branding = SITE.sections.find((s) => s.id === "branding")!;
 
@@ -20,7 +21,25 @@ function pick(event: string, numbers: number[]): ImageAsset[] {
   });
 }
 
+/** The photo the manifest flags as the event's feature image. */
+function featured(event: string): ImageAsset {
+  const found = findImages("branding", event).find((img) => img.featured);
+  if (!found) {
+    throw new Error(`No featured image flagged for branding/${event}`);
+  }
+  return found;
+}
+
+/**
+ * Section 03. One module, EventFeature, repeated per event: the feature
+ * image with the event name overhanging it, then the supporting photos.
+ * Friendsgiving is the page's one collage; the others run the numbered
+ * strip. White Elephant photo 4 is byte-identical to photo 2, not a
+ * second angle, so it is left out.
+ */
 export function BrandingSection() {
+  const [galentines, friendsgiving, whiteElephant] = branding.subItems ?? [];
+
   return (
     <>
       <MarqueeBand
@@ -48,176 +67,50 @@ export function BrandingSection() {
           </p>
         </Reveal>
 
+        <Reveal>
+          <BackdropBand
+            image={findStock("tablescape")}
+            tint="espresso"
+            opacity={0.3}
+            height="40vh"
+            className="bleed mt-block"
+          >
+            {branding.blurb ? (
+              <div className="frame flex justify-center">
+                <p className="max-w-2xl bg-label px-4 py-2 text-center type-lead text-on-label">
+                  {branding.blurb}
+                </p>
+              </div>
+            ) : null}
+          </BackdropBand>
+        </Reveal>
+
         <div className="mt-block flex flex-col gap-section">
           <Reveal>
-            <GalentinesEvent name={branding.subItems?.[0] ?? ""} />
+            <EventFeature
+              title={galentines ?? ""}
+              featureImage={featured("galentines")}
+              strip={pick("galentines", [5, 14, 17, 18, 26])}
+              priority
+            />
           </Reveal>
           <Reveal delay={90}>
-            <FriendsgivingEvent name={branding.subItems?.[1] ?? ""} />
+            <EventFeature
+              title={friendsgiving ?? ""}
+              variant="collage"
+              featureImage={featured("friendsgiving")}
+              strip={pick("friendsgiving", [5, 10, 13, 33, 35])}
+            />
           </Reveal>
           <Reveal delay={180}>
-            <WhiteElephantEvent name={branding.subItems?.[2] ?? ""} />
+            <EventFeature
+              title={whiteElephant ?? ""}
+              featureImage={featured("white-elephant")}
+              strip={pick("white-elephant", [2, 3, 5])}
+            />
           </Reveal>
         </div>
       </section>
     </>
-  );
-}
-
-/**
- * Galentine's Day: statement, then index. One large image carries the
- * event's italic name; a tight numbered row of smaller images follows
- * immediately beneath, the contrast between the two doing the work.
- */
-function GalentinesEvent({ name }: { name: string }) {
-  const [statement, ...index] = pick("galentines", [9, 5, 14, 17, 18, 26]);
-
-  return (
-    <div>
-      <div className="relative bleed">
-        <div className="hover-zoom aspect-[16/10] w-full bg-placeholder md:aspect-[21/9]">
-          <Image
-            src={imageSrc(statement)}
-            alt={statement.alt}
-            width={statement.width}
-            height={statement.height}
-            sizes="100vw"
-            loading="lazy"
-            className="size-full object-cover"
-          />
-        </div>
-        <span className="absolute bottom-0 left-gutter z-10 translate-y-1/2 bg-label px-4 py-2 font-display type-h2 italic text-on-label sm:left-8">
-          {name}
-        </span>
-      </div>
-      <ol className="mt-block grid grid-cols-2 gap-px bg-rule pt-6 sm:grid-cols-5">
-        {index.map((img, i) => (
-          <li
-            key={img.webp}
-            className={`flex flex-col gap-2 bg-page pb-2 ${
-              i === index.length - 1 && index.length % 2 === 1
-                ? "col-span-2 sm:col-span-1"
-                : ""
-            }`}
-          >
-            <div className="hover-zoom aspect-square w-full bg-placeholder">
-              <Image
-                src={imageSrc(img)}
-                alt={img.alt}
-                width={img.width}
-                height={img.height}
-                sizes="(min-width: 640px) 20vw, 50vw"
-                loading="lazy"
-                className="size-full object-cover"
-              />
-            </div>
-            <span className="eyebrow px-1 tabular-nums text-ink-soft">
-              0{i + 1}
-            </span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-/**
- * Friendsgiving: a collage. Offset, overlapped, slightly rotated photos
- * inside a fixed-ratio frame, positioned by percentage so it reflows at
- * any width without breaking the overlap. The event name sits behind the
- * top layer of photos and is cropped by them, the same graphic-object
- * move the hero and style guide use.
- */
-function FriendsgivingEvent({ name }: { name: string }) {
-  const photos = pick("friendsgiving", [1, 5, 10, 13, 33, 35]);
-  const layout = [
-    { left: "0%", top: "9%", width: "42%", rotate: "-4deg", z: 10 },
-    { left: "34%", top: "0%", width: "38%", rotate: "3deg", z: 20 },
-    { left: "64%", top: "8%", width: "36%", rotate: "-2deg", z: 10 },
-    { left: "6%", top: "46%", width: "34%", rotate: "2deg", z: 20 },
-    { left: "38%", top: "40%", width: "40%", rotate: "-3deg", z: 30 },
-    { left: "66%", top: "50%", width: "34%", rotate: "4deg", z: 10 },
-  ] as const;
-
-  return (
-    <div className="bleed relative aspect-[4/5] sm:aspect-[16/11]">
-      <span className="absolute top-[30%] left-[4%] z-[25] bg-label px-4 py-2 font-display type-display-lg italic text-on-label">
-        {name}
-      </span>
-      {photos.map((img, i) => {
-        const pos = layout[i];
-        return (
-          <div
-            key={img.webp}
-            style={{
-              left: pos.left,
-              top: pos.top,
-              width: pos.width,
-              zIndex: pos.z,
-              rotate: pos.rotate,
-            }}
-            className="hover-zoom absolute aspect-[4/3] bg-placeholder"
-          >
-            <Image
-              src={imageSrc(img)}
-              alt={img.alt}
-              width={img.width}
-              height={img.height}
-              sizes="(min-width: 640px) 30vw, 42vw"
-              loading="lazy"
-              className="size-full object-cover"
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/**
- * White Elephant: full bleed, hairline grid. Two rows of two images,
- * separated only by a 1px rule, no gaps of ground. Photo 4 was dropped —
- * it is byte-identical to photo 2, not a second angle. The event name
- * overlaps the seam above it, pulled down with a negative margin.
- */
-function WhiteElephantEvent({ name }: { name: string }) {
-  const [a, b, c, d] = pick("white-elephant", [1, 2, 3, 5]);
-
-  return (
-    <div>
-      <p className="relative z-10 -mb-6 pl-gutter font-display type-display-lg italic text-accent sm:pl-8 md:-mb-10">
-        {name}
-      </p>
-      <div className="bleed grid grid-cols-2 gap-px bg-rule">
-        {[a, b].map((img) => (
-          <div key={img.webp} className="hover-zoom aspect-[4/3] bg-placeholder">
-            <Image
-              src={imageSrc(img)}
-              alt={img.alt}
-              width={img.width}
-              height={img.height}
-              sizes="50vw"
-              loading="lazy"
-              className="size-full object-cover"
-            />
-          </div>
-        ))}
-      </div>
-      <div className="bleed mt-px grid grid-cols-2 gap-px bg-rule">
-        {[c, d].map((img) => (
-          <div key={img.webp} className="hover-zoom aspect-[4/3] bg-placeholder">
-            <Image
-              src={imageSrc(img)}
-              alt={img.alt}
-              width={img.width}
-              height={img.height}
-              sizes="50vw"
-              loading="lazy"
-              className="size-full object-cover"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }

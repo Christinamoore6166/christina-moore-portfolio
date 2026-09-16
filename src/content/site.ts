@@ -28,7 +28,6 @@ export interface Section {
 
 export interface Contact {
   line: string;
-  email: string;
   linkedin: string;
   linkedinLabel: string;
 }
@@ -67,8 +66,8 @@ export const SITE: Site = {
     },
     {
       id: "branding",
-      number: "02",
-      eyebrow: "Section 02",
+      number: "03",
+      eyebrow: "Section 03",
       title: "Branding / Event Planning",
       blurb:
         "How I've applied brand strategy and event curation to create meaningful personal experiences",
@@ -78,8 +77,8 @@ export const SITE: Site = {
     },
     {
       id: "other",
-      number: "03",
-      eyebrow: "Section 03",
+      number: "04",
+      eyebrow: "Section 04",
       title: "Other",
       blurb: "Additional examples of my creative work / ventures",
       subHeading: "Crafting, customized gifts and more",
@@ -101,10 +100,9 @@ export const SITE: Site = {
   ],
 
   contact: {
-    line: "Let's talk — about a role, a project, or just to say hello.",
-    email: "christinamoore6166@gmail.com",
+    line: "Let's talk about a role, a project, or just to say hello.",
     linkedin: "https://www.linkedin.com/in/christina-moore-46120a13a",
-    linkedinLabel: "LinkedIn",
+    linkedinLabel: "Connect on LinkedIn",
   },
 
   footer: {
