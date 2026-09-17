@@ -87,10 +87,11 @@ export const SITE: Site = {
       subSections: [
         {
           id: "cake",
-          title: "Cake Decorating",
-          blurb: "A previous entrepreneurial chapter that continues now through a creative pastime",
+          title: "Other Creative Work",
+          blurb:
+            "What began as creative hobbies evolved into a way to design personalized gifts and custom pieces for my family and friends' milestones, exploring new artistic techniques along the way.",
           body:
-            "After an opportunity to shadow a friend who owned their own bakery, I attempted to combine my love for baking with my artistic interests, now creating cakes, cupcakes and other baked goods for events in my life.",
+            "A previous entrepreneurial chapter that continues now as a creative pastime, shaping how I bring a personal, handmade touch to the people and milestones I care about.",
         },
       ],
       galleryHeading: "Graphic Design Portfolio",
