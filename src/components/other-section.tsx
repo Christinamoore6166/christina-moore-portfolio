@@ -123,11 +123,10 @@ function CakeThread({
 
 /**
  * Crafting and customized gifts, as one EventFeature. The block's heading
- * is the module's label, so it is not repeated above the image; the body
- * copy follows the strip. The feature is the full custom garment design,
- * the strip draws on curated gifting and the bachelorette work, which is
- * exactly the "personalized gifts and custom pieces for milestones" the
- * copy describes.
+ * is the module's label, so it is not repeated above the image. The
+ * feature is the full custom garment design, the strip draws on curated
+ * gifting and the bachelorette work, which is exactly the "personalized
+ * gifts and custom pieces for milestones" the copy describes.
  */
 function CraftingThread() {
   const strip = [
@@ -136,13 +135,10 @@ function CraftingThread() {
   ];
 
   return (
-    <div>
-      <EventFeature
-        title={other.subHeading ?? ""}
-        featureImage={featured("curated-gifting")}
-        strip={strip}
-      />
-      <p className="mt-block max-w-prose type-lead">{other.body}</p>
-    </div>
+    <EventFeature
+      title={other.subHeading ?? ""}
+      featureImage={featured("curated-gifting")}
+      strip={strip}
+    />
   );
 }

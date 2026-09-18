@@ -58,13 +58,10 @@ export function BrandingSection() {
               <span className="label-bar">{branding.eyebrow}</span>
             </div>
             <h2 className="type-display">{branding.title}</h2>
-            {branding.blurb ? (
-              <p className="type-lead">{branding.blurb}</p>
+            {branding.body ? (
+              <p className="max-w-prose type-lead">{branding.body}</p>
             ) : null}
           </div>
-          <p className="max-w-prose md:col-span-6 md:col-start-7 md:self-end">
-            {branding.body}
-          </p>
         </Reveal>
 
         <Reveal>

@@ -23,7 +23,7 @@ export function OverviewView() {
 
   return (
     <div ref={ref} className="group/draw flex flex-col items-start gap-block">
-      <p className="font-display type-h1 text-ink">
+      <p className="font-display type-h2 text-ink">
         {/* [display:inline-block] rather than the inline-block class: with
             the spacing token named "block", Tailwind also reads that class
             as inline-size: var(--spacing-block) and fixes every word box. */}
