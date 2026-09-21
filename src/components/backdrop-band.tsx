@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import type { StockImage } from "@/content/images";
+import { blurProps } from "@/lib/images";
 
 type Tint = "ground" | "espresso";
 
@@ -60,6 +61,7 @@ export function BackdropBand({
         sizes={SIZES}
         loading="lazy"
         decoding="async"
+        {...blurProps(image)}
         className="-z-20 object-cover"
       />
       <div

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { SITE } from "@/content/site";
-import { findImages, imageSrc } from "@/lib/images";
+import { blurProps, findImages, imageSrc } from "@/lib/images";
 import { Parallax } from "@/components/motion/parallax";
 import { Reveal } from "@/components/motion/reveal";
 import { LinkedInButton } from "@/components/linkedin-button";
@@ -49,6 +49,7 @@ export function Hero() {
               sizes="(min-width: 768px) 38vw, 80vw"
               loading="eager"
               fetchPriority="high"
+              {...blurProps(portrait)}
               className="size-full object-cover"
             />
           </Parallax>

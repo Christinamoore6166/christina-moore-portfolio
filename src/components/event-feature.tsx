@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { ImageAsset } from "@/content/images";
-import { imageSrc } from "@/lib/images";
+import { blurProps, imageSrc } from "@/lib/images";
 
 /** The strip is numbered 01 to 05; anything longer is a mistake upstream. */
 export const STRIP_MAX = 5;
@@ -168,6 +168,7 @@ export function EventFeature({
             loading={priority ? "eager" : "lazy"}
             decoding={priority ? undefined : "async"}
             fetchPriority={priority ? "high" : undefined}
+            {...blurProps(featureImage)}
             className="size-full object-cover"
           />
         </button>
@@ -205,6 +206,7 @@ export function EventFeature({
                     width={img.width}
                     height={img.height}
                     sizes={COLLAGE_SIZES}
+                    {...blurProps(img)}
                     loading="lazy"
                     decoding="async"
                     className="size-full object-cover"
@@ -237,6 +239,7 @@ export function EventFeature({
                   width={img.width}
                   height={img.height}
                   sizes={STRIP_SIZES}
+                  {...blurProps(img)}
                   loading="lazy"
                   decoding="async"
                   className="size-full object-cover"
@@ -305,6 +308,7 @@ export function EventFeature({
                   width={current.width}
                   height={current.height}
                   sizes="90vw"
+                  {...blurProps(current)}
                   className="max-h-[85vh] w-auto object-contain"
                 />
               </div>

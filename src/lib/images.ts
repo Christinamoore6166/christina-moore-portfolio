@@ -13,3 +13,14 @@ export function findImages(
 ): ImageAsset[] {
   return images.filter((i) => i.section === section && i.event === event);
 }
+
+/**
+ * next/image blur placeholder props for an asset. images.ts references photos
+ * by path string, so there is no static import to derive blurDataURL from;
+ * the tiny data URL is stored in the manifest instead.
+ */
+export function blurProps(asset: Pick<ImageAsset, "blur">) {
+  return asset.blur
+    ? { placeholder: "blur" as const, blurDataURL: asset.blur }
+    : {};
+}

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { SITE } from "@/content/site";
-import { findImages, imageSrc } from "@/lib/images";
+import { blurProps, findImages, imageSrc } from "@/lib/images";
 import { Reveal } from "@/components/motion/reveal";
 
 const about = SITE.sections.find((s) => s.id === "about")!;
@@ -29,6 +29,7 @@ export function AboutSection() {
                 width={portrait.width}
                 height={portrait.height}
                 sizes="(min-width: 768px) 38vw, 100vw"
+                {...blurProps(portrait)}
                 className="size-full object-cover"
               />
             </div>
