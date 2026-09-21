@@ -23,3 +23,20 @@ RULES:
 - GALLERY GRAMMAR is one repeating module, EventFeature (feature image plus numbered strip). Do not introduce a second gallery layout without asking.
 - STOCK imagery lives in public/images/stock/ and is only ever a tinted backdrop. It never appears inside a strip, the tile marquee, or the lightbox.
 - Every string in the Experience section renders from src/data/resume.ts and nothing else.
+
+EDIT WORKFLOW
+- Small edits go straight to main. Larger or visual changes go on a branch named edit/<topic>, pushed for a Vercel preview URL, and merged only when I say so.
+- Every edit ends with: npm run build, commit, push, then open the production URL and confirm the change is visible there.
+- Copy changes are made in src/content/site.ts, image changes in src/content/images.ts. Never edit copy inside a component.
+- Report file and line range for every change. Never claim a change is live without having loaded the production URL.
+
+VISUAL UPGRADE (Sep 2026)
+- The plan is docs/Visual-Enhancement-Roadmap.md. Reference code is in docs/redesign-code/. The roadmap's file paths are guesses; always work in the real files of this repo.
+- Visual changes only. Never change visible text, headings, alt text, links, section ids or section order. Copy stays in src/content/site.ts.
+- LinkedIn is the only contact method. Never add an email address anywhere.
+- No new dependencies. The reference code is plain React, CSS and native browser APIs. If motion is already installed and used for reveals, you may keep using it rather than adding a second system.
+- This upgrade deliberately adds a timed photo showcase to the Branding / Event Planning section. That replaces the earlier no-carousels rule for that section only.
+- Every animation must be fully off under prefers-reduced-motion.
+- The placeholders EXISTING HEADING and EXISTING ALT TEXT in the reference code are filled with the exact text already in this site. Never invent copy or alt text.
+- Edited photos, read only: C:\Users\custo\OneDrive\CLAUDE\Christina Personal\Personal Website\Website Photo References\Edited - Clean Bright
+- Never write any file into OneDrive.
