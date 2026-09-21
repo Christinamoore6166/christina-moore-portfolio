@@ -244,14 +244,143 @@ Ordered by how much they would change the work.
 
 ---
 
-## 4. Build order, adjusted
+## 4. Decisions and build order
 
-The roadmap's order holds, with two changes:
+Both open questions from the first draft of this map were settled on
+Sep 21, 2026. Recorded here so the roadmap is read through them.
 
-- **Step 1 cannot be done from `next.config.ts` alone.** Raising delivered
-  resolution means raising `LONG_EDGE` in `scripts/prepare-images.mjs`,
-  re-running it, re-organising `_unsorted`, and updating the `width`/`height`
-  values in `images.ts`. That is a data task, not a config task — and it is the
-  prerequisite for everything in Pin 1. Decide whether it is in scope first.
-- **Settle the radius/shadow question before step 2.** Every glass and card
-  treatment downstream depends on the answer.
+### Decision 1 — the re-export is in scope, and is prompt 03
+
+Step 1 of the roadmap cannot be done from `next.config.ts` alone; it is a data
+task. Agreed terms for that run:
+
+| Term | Value |
+|---|---|
+| Source folder | `…\Website Photo References\Edited - Clean Bright` (the **edited** photos, not the original folder) |
+| `LONG_EDGE`, standard | **2400** |
+| `LONG_EDGE`, wide event shots and backdrops | **3200** |
+| EXIF stripping | **Keep**, and verify on a sample |
+| `_unsorted` handling | **No hand sorting.** Match each output to the file it replaces **by basename** and write it into that file's existing section folder |
+| `images.ts` | Update `width` and `height` from the new files |
+
+#### Settled terms (answers given Sep 21, 2026)
+
+**1. Both `SOURCE_DIR`s point at `Edited - Clean Bright`.**
+
+- `scripts/prepare-images.mjs:9` currently points at the **parent** reference
+  folder. Repoint it. Left alone, the run reprocesses unedited originals and
+  overwrites the edited work.
+- `scripts/prepare-images.mjs` reads that folder for **all event, crafting and
+  other photos**.
+- `scripts/process-headshots.mjs` uses **exactly two files** from it:
+  - `Primary Headshot High Res.jpg` → hero
+  - `Seondar Headshot High Res.jpg` → About
+  (Spelling verified against disk — `Seondar` is the real filename, not a typo
+  in this document.) Both are **already edited**: resize and strip EXIF only,
+  no other processing.
+- **Neither script may read the parent reference folder again.** Add a guard
+  that exits with an error if `SOURCE_DIR` is not the Edited folder.
+
+**2. Backdrops cap at 3200, intended.** 3200px covers a full-width section on a
+2x screen; larger only adds weight.
+
+Verified in the Edited folder — all four exist and are **already 3200 wide**, so
+the cap passes them through untouched:
+
+| Edited file | Dimensions |
+|---|---|
+| `Nashville Large.jpg` | 3200 × 1800 |
+| `Linen_Large.jpg` | 3200 × 1800 |
+| `Buttercream Large.jpg` | 3200 × 1800 |
+| `Tablescape Large.jpg` | 3200 × 1800 |
+
+If each is the same image as its counterpart in `public/images/stock/`, replace
+it with the edited version. If any is a different image, cap at 3200 and leave
+its colour alone. **List which ones were matched.**
+
+> **Open risk — aspect ratio.** All four edited files are 16:9 landscape. Three
+> of the four current stock images are **portrait**:
+>
+> | Stock id | In repo now | Edited "Large" |
+> |---|---|---|
+> | `nashville` | 5177 × 3386 (landscape) | 3200 × 1800 (landscape) |
+> | `tablescape` | 3472 × 4640 (**portrait**) | 3200 × 1800 (landscape) |
+> | `buttercream` | 4000 × 5000 (**portrait**) | 3200 × 1800 (landscape) |
+> | `linen` | 3448 × 4592 (**portrait**) | 3200 × 1800 (landscape) |
+>
+> These may be the same photograph cropped differently, or different photographs.
+> Deciding that needs someone to **look at both**, which has not been done — per
+> CLAUDE.md, never describe a photo you have not seen. `BackdropBand` renders
+> with `fill` + `object-cover`, so a portrait→landscape swap changes which part
+> of the frame survives the crop, and `buttercream` runs at `opacity 0.72` behind
+> centred text. Compare visually before replacing, and re-check the cake and
+> contact bands at 390px afterwards.
+
+**3. Per-file lookup, one pass.** Not two passes. Add a `WIDE` list of basenames
+that take 3200; everything else takes 2400. Keep `withoutEnlargement: true`
+(`:123`, `:131`) so nothing is ever upscaled.
+
+`WIDE` (all verified present in the Edited folder):
+
+| Basename | Dimensions |
+|---|---|
+| `Galentines Wide` | 3200 × 2134 |
+| `Friendsgiving 2 wide` | 3200 × 2133 |
+| `friendsgiving wide` | 3200 × 2135 |
+| `White Elephant Wide` | 3200 × 2133 |
+| the four backdrops above | 3200 × 1800 |
+
+Note `LONG_EDGE` is currently a single module-level constant (`:11`) applied to
+every output, so this is a change of shape, not just of value.
+
+Because of `withoutEnlargement`, sources shorter than their cap keep their own
+size — the two headshots are 1600 × 2400, exactly at the 2400 cap, so they pass
+through unchanged. Re-check the §2.1 distribution after the run rather than
+assuming everything lands at 2400.
+
+**4. Logos are out of scope.** The 46 graphic-design logos stay at 688px; they
+display at ~180px in the tile marquee, which is already ample. Do not touch them.
+
+**5. Verify basenames first, fail loudly.** Before writing anything, check
+basenames across all section folders. On any collision: **stop, list the
+duplicates, and wait.** Do not overwrite and do not rename unilaterally.
+
+> Pre-checked on Sep 21, 2026: **no collisions** across `public/images/{about,
+> branding,other,stock}` (`_archive` and `_unsorted` excluded). Re-run the check
+> at execution time anyway — it is a precondition, not a one-off.
+
+OneDrive stays **read-only** throughout. Both scripts only read from it and write
+into `public/images/_unsorted`, which is in-repo, so the CLAUDE.md rule holds.
+
+### Decision 2 — rounded corners and shadows are allowed, scoped
+
+Replaces the earlier no-radius/no-shadow rule. Now recorded as the SHAPE rule in
+`CLAUDE.md`:
+
+- Rounded corners (`radius-card`) on **photo cards, glass panels, the lightbox
+  image and pill controls** only.
+- A soft shadow on **glass surfaces** only. **Photo cards get no shadow.**
+- Full-bleed and backdrop photography stays **square and anchored to the edges**.
+- Nothing else gets a radius or a shadow.
+
+This unblocks §2a–2c of the roadmap. Three places still state the old rule and
+will contradict `CLAUDE.md` until they are updated as part of the implementation:
+
+| Location | What it says now | Handling |
+|---|---|---|
+| `src/app/globals.css:139–145` | `--radius-*: initial` plus "No rounded cards. rounded-lg and up do not exist." | Add `--radius-card` and `--radius-pill`; rewrite the comment to the scoped rule. |
+| `src/app/globals.css:147–150` | `--shadow-*: initial` plus "No drop shadows. Depth comes from colour steps and hairlines." | Add one glass shadow token; rewrite the comment. |
+| `src/app/style-guide/page.tsx:57` | "No rounded cards, no drop shadows. Depth comes from colour steps and hairlines." | **Visible copy on the `/style-guide` route.** It becomes factually wrong. Needs a copy change, so raise it rather than editing it silently under the visual-changes-only rule. |
+
+Scope note: the roadmap applies `--radius-card` to things this rule does not
+cover — the About backdrop photo (§3, About) and the `.band-in` marquee band.
+Under the SHAPE rule, backdrop and full-bleed photography stays square. Prefer
+the rule over the roadmap where they disagree.
+
+### Build order
+
+The roadmap's order in §7 otherwise holds. With both decisions made, step 1 is
+prompt 03 (the re-export), and step 2 (tokens, themes, glass) is no longer
+blocked.
+
+**Not started yet: prompt 03.**
