@@ -49,6 +49,18 @@
   --color-espresso-lift: #4a3630;
   --color-espresso-deep: #231813;
 
+  /* Visual upgrade (Sep 2026): a bright accent, a bright band fill and
+     the three glass values. Terracotta is for display type at 24px and
+     up, and for fills; it is not a body-text colour. A coral band
+     always takes espresso text. The glass values are deliberately raw
+     rgb() with alpha: they sit over photography, so they cannot be a
+     var() indirection through the theme. */
+  --color-terracotta: #b5482f;
+  --color-coral: #e8a38a;
+  --color-glass: rgb(247 243 239 / 0.55);
+  --color-glass-dark: rgb(47 33 28 / 0.45);
+  --color-glass-edge: rgb(255 255 255 / 0.35);
+
   /* ---------- Type ---------- */
   --font-*: initial;
   --font-display:
@@ -136,16 +148,25 @@
   --container-prose: 42rem;
   --container-page: 88rem;
 
-  /* ---------- Shape ----------
-     No rounded cards. rounded-lg and up do not exist. */
+  /* ---------- Shape (Sep 2026) ----------
+     Radius is scoped, not general. radius-card belongs to photo cards,
+     glass panels and the lightbox image; radius-pill to pill controls.
+     Full-bleed and backdrop photography stays square and anchored to
+     the edges. Nothing else takes a radius, so the generic Tailwind
+     steps above sm still do not exist. */
   --radius-*: initial;
   --radius-none: 0px;
   --radius-xs: 2px;
   --radius-sm: 4px;
+  --radius-card: 1.25rem;
+  --radius-pill: 9999px;
   --radius-full: 9999px;
 
-  /* No drop shadows. Depth comes from colour steps and hairlines. */
+  /* One shadow, and it belongs to glass surfaces only. Photo cards get
+     none. Everywhere else depth still comes from colour steps and
+     hairlines, so there is no general shadow scale. */
   --shadow-*: initial;
+  --shadow-glass: 0 8px 32px rgb(47 33 28 / 0.1);
   --inset-shadow-*: initial;
   --drop-shadow-*: initial;
 
@@ -208,8 +229,13 @@
   --accent: var(--color-chestnut);
   --label: var(--color-rose);
   --on-label: var(--color-chestnut);
-  --numeral: var(--color-tan);
-  --on-numeral: var(--color-espresso);
+  /* Finding 8. The small section numerals (numeral-block at type-h2)
+     were a tan fill carrying espresso, 4.4:1. Chestnut carrying
+     ink-invert is 8.4:1 and holds at any size. Tan stays available as a
+     primitive for oversized decorative numerals, which are aria-hidden
+     and not carrying information. */
+  --numeral: var(--color-chestnut);
+  --on-numeral: var(--color-ink-invert);
   --hover: var(--color-clay);
   --on-hover: var(--color-espresso);
   --mark: var(--color-olive);
@@ -594,6 +620,302 @@
     [data-reveal] {
       opacity: 1;
       translate: none;
+      transition: none;
+    }
+  }
+}
+
+/* ==================================================================
+   Visual upgrade (Sep 2026)
+   Section themes, glass surfaces, motion utilities and the nav pill.
+   Nothing below this line is applied to any component yet, with one
+   exception: the section performance guard, which is an element
+   selector and takes effect immediately.
+   ================================================================== */
+
+/* ---------- Section themes ----------
+   The semantic map in @theme inline reads the live variables, so a
+   section that redefines them flips on its own, with no dark: prefix
+   and without touching the page theme. theme-inverse mirrors the dark
+   block deliberately, rather than setting only four properties: a
+   whole section sits inside it, including label bars, numeral blocks
+   and buttons, and a half-defined theme leaves those on light values. */
+@layer components {
+  .theme-inverse {
+    --page: var(--color-espresso);
+    --raised: var(--color-espresso-raised);
+    --ink: var(--color-ink-invert);
+    --ink-soft: var(--color-ink-invert-muted);
+    --accent: var(--color-coral);
+    --label: var(--color-chestnut);
+    --on-label: var(--color-ink-invert);
+    /* Chestnut on espresso is 1.9:1, so the numeral block goes back to
+       tan here, the way the dark theme already handles it. */
+    --numeral: var(--color-tan);
+    --on-numeral: var(--color-espresso);
+    --hover: var(--color-espresso-lift);
+    --on-hover: var(--color-clay);
+    --mark: var(--color-olive);
+    --rule: color-mix(in oklab, var(--color-ink-invert) 18%, transparent);
+    --placeholder: var(--color-espresso-lift);
+    --inverse: var(--color-espresso-deep);
+    --on-inverse: var(--color-ink-invert);
+    --on-inverse-soft: var(--color-ink-invert-muted);
+    --primary: var(--color-coral);
+    --on-primary: var(--color-espresso);
+    --primary-hover: var(--color-clay);
+
+    background-color: var(--page);
+    color: var(--ink);
+  }
+
+  .theme-blush {
+    --page: var(--color-coral);
+    --raised: color-mix(in oklab, var(--color-coral) 82%, var(--color-surface));
+    --ink: var(--color-espresso);
+    --ink-soft: var(--color-brown);
+    --accent: var(--color-chestnut);
+    /* Olive is 1.7:1 on coral, so the marker takes chestnut, 5.1:1. */
+    --mark: var(--color-chestnut);
+    --rule: color-mix(in oklab, var(--color-espresso) 24%, transparent);
+
+    background-color: var(--page);
+    color: var(--ink);
+  }
+
+  /* A half-step, not a pivot: cream on cream so a gallery reads apart
+     from the section above it. Ink is unchanged, so nothing else moves. */
+  .theme-surface {
+    --page: var(--color-surface);
+
+    background-color: var(--page);
+  }
+}
+
+/* ---------- Glass surfaces ----------
+   No border-radius here on purpose. A glass panel takes rounded-card
+   and the nav pill takes rounded-pill, so the radius composes rather
+   than being baked in.
+
+   The -webkit- prefix is deliberately not written by hand. Lightning
+   CSS emits both forms from the standard property; writing the pair
+   out makes it collapse to the prefixed one alone, which Firefox does
+   not support, and Firefox would then also pass the @supports test
+   below and skip the opaque fallback. Verified in the built CSS. */
+@utility glass {
+  background-color: var(--color-glass);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--color-glass-edge);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility glass-dark {
+  background-color: var(--color-glass-dark);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: var(--shadow-glass);
+}
+
+/* Unlayered on purpose: an unlayered rule outranks every @layer, so
+   this wins over the utilities above wherever blur is unsupported.
+   Both fall back to a near-opaque fill so text stays readable. */
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .glass {
+    background-color: rgb(247 243 239 / 0.92);
+  }
+  .glass-dark {
+    background-color: rgb(47 33 28 / 0.9);
+  }
+}
+
+/* ---------- Motion utilities ----------
+   These extend the existing systems rather than adding a third one.
+   reveal-mask is keyed to the [data-reveal] contract above, not to the
+   reference code class is-in, so there is still one reveal observer and
+   the pre-JS state is still the finished state. */
+@layer components {
+  .reveal-mask {
+    transition:
+      clip-path var(--duration-reveal) var(--ease-out),
+      scale 1.2s var(--ease-out),
+      opacity var(--duration-reveal) var(--ease-out),
+      translate var(--duration-reveal) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal-mask[data-reveal="out"] {
+    clip-path: inset(12% 0 12% 0 round var(--radius-card));
+    scale: 1.06;
+  }
+  .reveal-mask[data-reveal="in"] {
+    clip-path: inset(0 0 0 0 round var(--radius-card));
+    scale: 1;
+  }
+
+  /* Stagger children by setting --i on each one. This feeds both a
+     plain transition-delay and the --reveal-delay that [data-reveal]
+     reads, so it works with or without a Reveal wrapper. */
+  .stagger > * {
+    --reveal-delay: calc(var(--i, 0) * 70ms);
+    transition-delay: var(--reveal-delay);
+  }
+
+  /* Scroll-linked, no JS. Without support the classes do nothing at
+     all, which is the intended fallback: the element just sits still. */
+  @supports (animation-timeline: view()) {
+    @keyframes drift {
+      from {
+        translate: 0 6%;
+      }
+      to {
+        translate: 0 -6%;
+      }
+    }
+    @keyframes band-in {
+      from {
+        clip-path: inset(0 0 100% 0);
+      }
+      to {
+        clip-path: inset(0 0 0 0);
+      }
+    }
+    .drift {
+      animation: drift linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+    .band-in {
+      animation: band-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+
+  /* Photo card: radius per the shape rule, and no shadow. The hover is
+     a stronger hover-zoom (1.04 plus saturate). The two overlap, so a
+     given element takes one or the other, never both. */
+  .photo-card {
+    overflow: hidden;
+    border-radius: var(--radius-card);
+  }
+  @media (hover: hover) {
+    .photo-card img {
+      transition:
+        scale var(--duration-slow) var(--ease-out),
+        filter var(--duration-slow) var(--ease-out);
+    }
+    .photo-card:hover img {
+      scale: 1.04;
+      filter: saturate(1.08);
+    }
+  }
+}
+
+/* The reduced-motion branch stays authoritative. Unlayered, so it wins
+   over everything above without fighting on specificity. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-mask,
+  .drift,
+  .band-in,
+  .stagger > *,
+  .photo-card img,
+  .photo-card:hover img {
+    animation: none !important;
+    transition: none !important;
+    clip-path: none !important;
+    scale: 1 !important;
+    translate: none !important;
+    filter: none !important;
+  }
+}
+
+/* ---------- Performance guard (finding 7) ----------
+   Skips rendering work for sections that are off screen. The auto
+   keyword in contain-intrinsic-size makes each section remember its
+   real height once it has been painted, so the scrollbar settles after
+   the first pass instead of guessing at 900px forever. In base, so a
+   utility can switch it off on any section that needs to overflow. */
+@layer base {
+  section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 900px;
+  }
+}
+
+/* ---------- Nav pill ----------
+   For the inner cluster in site-nav.tsx, the pointer-events-auto div
+   that carries bg-page today, not the nav element itself.
+
+   Both state classes are set from JavaScript. is-scrolled comes from an
+   IntersectionObserver on a sentinel above the nav. is-inverse is set
+   when the pill sits over a theme-inverse section: the pill is sticky
+   and is not a descendant of that section, so this cannot be written as
+   a descendant selector. */
+@layer components {
+  .nav-pill {
+    border-radius: var(--radius-pill);
+    background-color: transparent;
+    border: 1px solid transparent;
+    box-shadow: none;
+    transition:
+      background-color var(--duration-base) var(--ease-standard),
+      border-color var(--duration-base) var(--ease-standard),
+      box-shadow var(--duration-base) var(--ease-standard),
+      color var(--duration-base) var(--ease-standard);
+  }
+
+  .nav-pill.is-scrolled {
+    background-color: var(--color-glass);
+    border-color: var(--color-glass-edge);
+    box-shadow: var(--shadow-glass);
+    backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  /* Variables, not colours, so the links, the numerals, the active
+     marker and the mobile disclosure panel all follow with no extra
+     classes on any of them. */
+  .nav-pill.is-inverse {
+    --page: var(--color-espresso-raised);
+    --ink: var(--color-ink-invert);
+    --ink-soft: var(--color-ink-invert-muted);
+    --mark: var(--color-coral);
+    --rule: color-mix(in oklab, var(--color-ink-invert) 18%, transparent);
+
+    color: var(--ink);
+  }
+
+  .nav-pill.is-inverse.is-scrolled {
+    background-color: var(--color-glass-dark);
+    border-color: rgb(255 255 255 / 0.1);
+  }
+
+  @supports not (
+    (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+  ) {
+    .nav-pill.is-scrolled {
+      background-color: rgb(247 243 239 / 0.92);
+    }
+    .nav-pill.is-inverse.is-scrolled {
+      background-color: rgb(47 33 28 / 0.9);
+    }
+  }
+
+  /* One sliding olive dash in place of the per-link dash. Width is 0
+     until JavaScript measures the active link, so nothing shows before
+     hydration. It reads either inline transform/width from a measuring
+     hook or the two custom properties, whichever the component sets. */
+  .nav-dash {
+    width: var(--nav-dash-w, 0px);
+    transform: translateX(var(--nav-dash-x, 0px));
+    background-color: var(--mark);
+    transition:
+      transform var(--duration-base) var(--ease-out),
+      width var(--duration-base) var(--ease-out),
+      background-color var(--duration-base) var(--ease-standard);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-dash {
       transition: none;
     }
   }
