@@ -26,6 +26,9 @@ RULES:
 - Every string in the Experience section renders from src/data/resume.ts and nothing else.
 
 EDIT WORKFLOW
+- BRANCH PREVIEW: https://christina-moore-portfolio-git-visual-upgrade-christinamoore6166.vercel.app
+  Always shows the newest push to visual-upgrade. Verify every prompt against
+  this URL after pushing — a local next build is not the check.
 - Small edits go straight to main. Larger or visual changes go on a branch named edit/<topic>, pushed for a Vercel preview URL, and merged only when I say so.
 - Every edit ends with: npm run build, commit, push, then open the production URL and confirm the change is visible there.
 - Copy changes are made in src/content/site.ts, image changes in src/content/images.ts. Never edit copy inside a component.

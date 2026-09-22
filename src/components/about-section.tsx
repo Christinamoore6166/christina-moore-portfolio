@@ -26,6 +26,10 @@ const about = SITE.sections.find((s) => s.id === "about")!;
  * carries on past its lower edge onto the ground, and the portrait sits
  * below the band rather than straddling it.
  *
+ * The band is square. It is full-bleed backdrop photography, so the
+ * SHAPE rule applies to it and not the roadmap's rounded backdrop. The
+ * card on top of it keeps radius-card, which that rule does cover.
+ *
  * Grid placement uses col-start / col-end longhands on purpose: the card,
  * the portrait and the margin word share one row and overlap, and
  * col-span at a breakpoint would reset the start line.
@@ -39,7 +43,7 @@ export function AboutSection() {
       id="about"
       className="relative isolate scroll-mt-14 border-t border-rule py-section"
     >
-      <div className="drift-frame absolute inset-x-0 top-0 -z-20 h-[13.5rem] overflow-hidden rounded-card md:h-[40rem] lg:h-[44rem]">
+      <div className="drift-frame absolute inset-x-0 top-0 -z-20 h-[13.5rem] overflow-hidden md:h-[40rem] lg:h-[44rem]">
         <div className="drift absolute inset-x-0 -top-[6%] h-[112%]">
           <Image
             src={stockSrc(backdrop)}
