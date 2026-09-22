@@ -59,7 +59,12 @@ export const events: EventBlock[] = [
     index: "01",
     title: galentines ?? "",
     featured: 0,
+    /* Photo 19 is IMG_0710, the tight overhead. It leads instead of the
+       wide shot, which measures the sharper file of the two but reads
+       flat at full width: it is a distant room shot where the table is
+       small. The wide shot moves to second rather than out. */
     photos: [
+      ...pick("galentines", [19]),
       bySlug("galentines", "wide"),
       oldFeature("galentines"),
       ...pick("galentines", [5, 14, 17, 18, 26]),
