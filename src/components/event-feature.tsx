@@ -20,6 +20,12 @@ interface EventFeatureProps {
   variant?: EventFeatureVariant;
   /** True only for the page's first EventFeature: its feature image loads eager/high priority instead of lazy. */
   priority?: boolean;
+  /**
+   * Swaps hover-zoom for photo-card (radius-card, the stronger zoom
+   * plus saturate) to match Branding's timed showcase. Off by default:
+   * the grammar itself is unchanged, this is styling only.
+   */
+  photoCard?: boolean;
 }
 
 /* Widths the images actually render at, so the browser picks the right
@@ -63,6 +69,7 @@ export function EventFeature({
   strip,
   variant = "default",
   priority = false,
+  photoCard = false,
 }: EventFeatureProps) {
   if (strip.length > STRIP_MAX) {
     throw new Error(
@@ -73,6 +80,7 @@ export function EventFeature({
   const all = [featureImage, ...strip];
   const openLightbox = useLightbox();
   const open = (i: number) => openLightbox(all, i);
+  const frame = photoCard ? "photo-card" : "hover-zoom";
 
   return (
     <div>
@@ -87,7 +95,7 @@ export function EventFeature({
           type="button"
           onClick={() => open(0)}
           aria-label={`Open full size: ${featureImage.alt}`}
-          className="hover-zoom block aspect-[4/3] max-h-[70vh] w-full bg-placeholder md:aspect-[21/9]"
+          className={`${frame} block aspect-[4/3] max-h-[70vh] w-full bg-placeholder md:aspect-[21/9]`}
         >
           <Image
             src={imageSrc(featureImage)}
@@ -128,7 +136,7 @@ export function EventFeature({
                   type="button"
                   onClick={() => open(i + 1)}
                   aria-label={`Open full size: ${img.alt}`}
-                  className="hover-zoom block aspect-[4/3] w-full bg-placeholder"
+                  className={`${frame} block aspect-[4/3] w-full bg-placeholder`}
                 >
                   <Image
                     src={imageSrc(img)}
@@ -161,7 +169,7 @@ export function EventFeature({
                 type="button"
                 onClick={() => open(i + 1)}
                 aria-label={`Open full size: ${img.alt}`}
-                className="hover-zoom block aspect-[4/5] w-full bg-placeholder"
+                className={`${frame} block aspect-[4/5] w-full bg-placeholder`}
               >
                 <Image
                   src={imageSrc(img)}

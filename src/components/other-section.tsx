@@ -49,6 +49,8 @@ export function OtherSection() {
     <>
       <MarqueeBand
         text={`${other.title} — ${cake?.title} — ${other.subHeading} — ${other.galleryHeading}`}
+        variant="feature"
+        tone="label"
       />
       <section id="other" className="scroll-mt-14">
         <Reveal className="frame flex flex-col gap-stack border-t border-rule py-section">
@@ -139,6 +141,7 @@ function CraftingThread() {
       title={other.subHeading ?? ""}
       featureImage={featured("curated-gifting")}
       strip={strip}
+      photoCard
     />
   );
 }

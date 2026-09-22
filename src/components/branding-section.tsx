@@ -23,6 +23,8 @@ export function BrandingSection() {
     <>
       <MarqueeBand
         text={`${branding.title} — ${branding.subItems?.join(" — ")}`}
+        variant="feature"
+        tone="blush"
       />
       <section
         id="branding"

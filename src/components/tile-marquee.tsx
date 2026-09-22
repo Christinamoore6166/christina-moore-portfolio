@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import type { ImageAsset } from "@/content/images";
 import { imageSrc } from "@/lib/images";
 import { useFullSize } from "@/components/motion/full-size-dialog";
+import { Marquee } from "@/components/motion/marquee";
 
 interface TileMarqueeProps {
   images: ImageAsset[];
@@ -23,9 +24,11 @@ const GRID_SIZES = "(min-width: 88rem) 13rem, (min-width: 48rem) 15vw, 30vw";
  * Each row is one track rendered twice, the copy aria-hidden and out of
  * the tab order, and the translate is exactly one track's width so the
  * loop has no seam. Hovering or focusing anything in the marquee pauses
- * both rows. Under prefers-reduced-motion the rows are not rendered at
- * all and the same tiles sit in a static grid instead. Every tile opens
- * the shared full-size view.
+ * both rows, and <Marquee> pauses them again while the band is off
+ * screen. The rows sit on their own theme-blush band; the tiles are
+ * glass, radius-card. Under prefers-reduced-motion the whole band is
+ * dropped and the same tiles sit in a plain static grid instead, left
+ * exactly as it was. Every tile opens the shared full-size view.
  */
 export function TileMarquee({ images }: TileMarqueeProps) {
   const { open, dialog } = useFullSize(images);
@@ -40,24 +43,27 @@ export function TileMarquee({ images }: TileMarqueeProps) {
 
   return (
     <div>
-      <div className="group bleed flex flex-col gap-3 motion-reduce:hidden md:gap-4">
-        {rows.map((row, r) => (
-          <div key={row.offset} className="overflow-hidden">
-            <div
-              style={
-                {
-                  "--marquee-duration": `${row.tiles.length * SECONDS_PER_TILE}s`,
-                } as CSSProperties
-              }
-              className={`flex w-max animate-[marquee-scroll_var(--marquee-duration)_linear_infinite] group-hover:[animation-play-state:paused] group-focus-within:[animation-play-state:paused] ${
-                r % 2 === 1 ? "[animation-direction:reverse]" : ""
-              }`}
-            >
-              <Track tiles={row.tiles} offset={row.offset} open={open} />
-              <Track tiles={row.tiles} offset={row.offset} open={open} copy />
+      <div className="theme-blush bleed bg-page py-block motion-reduce:hidden">
+        <Marquee className="flex flex-col gap-3 md:gap-4">
+          {rows.map((row, r) => (
+            <div key={row.offset} className="overflow-hidden">
+              <div
+                data-marquee-track
+                style={
+                  {
+                    "--marquee-duration": `${row.tiles.length * SECONDS_PER_TILE}s`,
+                  } as CSSProperties
+                }
+                className={`flex w-max animate-[marquee-scroll_var(--marquee-duration)_linear_infinite] group-hover:[animation-play-state:paused] group-focus-within:[animation-play-state:paused] ${
+                  r % 2 === 1 ? "[animation-direction:reverse]" : ""
+                }`}
+              >
+                <Track tiles={row.tiles} offset={row.offset} open={open} />
+                <Track tiles={row.tiles} offset={row.offset} open={open} copy />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </Marquee>
       </div>
 
       <ul className="hidden grid-cols-3 gap-3 motion-reduce:grid md:grid-cols-6 md:gap-4">
@@ -114,7 +120,7 @@ function Track({
             tabIndex={copy ? -1 : undefined}
             onClick={(e) => open(e.currentTarget, offset + i)}
             aria-label={`Open full size: ${img.alt}`}
-            className="hover-zoom block size-full bg-placeholder"
+            className="glass hover-zoom block size-full rounded-card"
           >
             <Image
               src={imageSrc(img)}

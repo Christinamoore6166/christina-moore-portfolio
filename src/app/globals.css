@@ -617,6 +617,17 @@
   }
 }
 
+/* Set by the <Marquee> wrapper: pauses whichever track it holds while
+   the band is off screen. Attribute-based rather than a class on the
+   track itself, so it works whether the track uses marquee-track or an
+   arbitrary animate-[marquee-scroll...] utility. Unlayered on purpose,
+   the same as the glass fallback below: an unlayered rule outranks the
+   utilities layer, where the animation shorthand utilities live, so
+   this wins without needing !important. */
+[data-offscreen="true"] [data-marquee-track] {
+  animation-play-state: paused;
+}
+
 /* Scroll reveal. Content is visible by default: <Reveal> only ever adds
    data-reveal once JavaScript has run, so no-JS and slow-hydration cases
    never show a blank block. "out" is applied by the observer only after
