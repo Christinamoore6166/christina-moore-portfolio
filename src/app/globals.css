@@ -922,6 +922,47 @@
   }
 }
 
+/* ---------- Experience timeline ----------
+   Section 02 only: the vertical rule and its role markers. The draw-in
+   transform stays with the component (it targets the group/draw
+   ancestor set by useDrawIn); shape and colour live here. */
+@layer components {
+  .timeline-line {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 1px;
+    transform-origin: top;
+    background-color: var(--ink-soft);
+    transition: transform 1200ms var(--ease-out);
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: 0;
+    top: 1.5rem;
+    translate: -50% 0;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--ink-soft);
+    background-color: var(--page);
+    transition:
+      background-color var(--duration-base) var(--ease-standard),
+      border-color var(--duration-base) var(--ease-standard);
+  }
+  .timeline-dot[data-active="true"] {
+    border-color: var(--mark);
+    background-color: var(--mark);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .timeline-line {
+      transition: none;
+    }
+  }
+}
+
 /* The morph itself. Matched view-transition-names animate position and
    size by default; this only sets the pace to the site's own. */
 ::view-transition-group(*) {

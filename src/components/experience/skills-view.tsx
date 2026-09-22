@@ -1,29 +1,22 @@
 "use client";
 
 import { RESUME } from "@/data/resume";
+import { Reveal } from "@/components/motion/reveal";
 import { useDrawIn } from "./use-draw-in";
 
 const STAT_STAGGER = 90;
-const BAR_STAGGER = 110;
-/* Bars start after the stats have landed. */
-const BAR_OFFSET = 240;
 
 const STAT_DRAW =
   "transition-[opacity,translate] duration-reveal ease-out motion-reduce:transition-none group-data-[drawn=out]/draw:translate-y-3 group-data-[drawn=out]/draw:opacity-0";
 
 /**
- * The four stats in a row, then the skills as bars that fill from zero
- * once the view is in the viewport. Skills carry no level, so every bar
- * fills fully and nothing is written beside it.
+ * The four stats in a row, then the skills as tags. Skills carry no
+ * level, so nothing here implies one: no bar, no fill, no number beside
+ * a name. Each is a glass-dark chip on the section's dark ground.
  */
 export function SkillsView() {
   const ref = useDrawIn<HTMLDivElement>();
   const { stats, skillGroups } = RESUME;
-
-  /* Flat index across both groups, so the bars fill in reading order. */
-  const offsets = skillGroups.map((_, g) =>
-    skillGroups.slice(0, g).reduce((n, group) => n + group.length, 0),
-  );
 
   return (
     <div ref={ref} className="group/draw">
@@ -42,22 +35,18 @@ export function SkillsView() {
         ))}
       </dl>
 
-      <div className="mt-block grid gap-x-block md:grid-cols-2">
+      <div className="mt-block grid gap-x-block gap-y-8 md:grid-cols-2">
         {skillGroups.map((group, g) => (
-          <ul key={g} className="flex flex-col">
-            {group.map((skill, i) => (
-              <li key={skill} className="relative py-4 type-lead">
+          <Reveal key={g} as="ul" variant="stagger" className="flex flex-wrap gap-3">
+            {group.map((skill) => (
+              <li
+                key={skill}
+                className="glass-dark rounded-pill px-4 py-2 type-small text-ink"
+              >
                 {skill}
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-ink transition-transform duration-reveal ease-out motion-reduce:transition-none group-data-[drawn=out]/draw:scale-x-0"
-                  style={{
-                    transitionDelay: `${BAR_OFFSET + (offsets[g] + i) * BAR_STAGGER}ms`,
-                  }}
-                />
               </li>
             ))}
-          </ul>
+          </Reveal>
         ))}
       </div>
     </div>

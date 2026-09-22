@@ -11,9 +11,9 @@ import { ExperienceTabs } from "@/components/experience/experience-tabs";
  * block, section chip, display heading, two-column grid); the intro
  * columns stay empty until copy for them is supplied.
  *
- * The backdrop is busy and the ground tint is light, so the content sits
- * on a page-colour plate and the photo frames it: a strip above and
- * below, and the gutters at the sides from md up. On the phone the plate
+ * The section is theme-inverse, the page's main dark pivot: an espresso
+ * plate over the same busy backdrop, framed by a strip above and below
+ * and the gutters at the sides from md up. On the phone the plate
  * bleeds to the edges so the copy lines up with every other section.
  *
  * The backdrop was the nashville skyline until About took that photo as
@@ -22,9 +22,9 @@ import { ExperienceTabs } from "@/components/experience/experience-tabs";
  * photograph as the tablescape band inside Branding, one screen further
  * down, and both read pale gold. buttercream-wide is a different
  * photograph from the buttercream in the cake band, that band is two
- * sections away, and it runs at espresso 0.72 against pale ground here.
- * Being an abstract texture it also survives this band's crop, which is
- * far taller than the 16:9 source.
+ * sections away, and its warm neutral tone holds under the espresso
+ * tint without a colour clash. Being an abstract texture it also
+ * survives this band's crop, which is far taller than the 16:9 source.
  */
 export function ExperienceSection() {
   const { section } = RESUME;
@@ -32,12 +32,12 @@ export function ExperienceSection() {
   return (
     <BackdropBand
       image={findStock("buttercream-wide")}
-      tint="ground"
-      opacity={0.12}
+      tint="espresso"
+      opacity={0.72}
       className="border-t border-rule py-block"
     >
       <section id={section.id} className="frame scroll-mt-14">
-        <div className="bg-page/95 px-gutter py-block max-md:bleed">
+        <div className="theme-inverse bg-page/95 px-gutter py-block max-md:bleed">
           <Reveal className="grid gap-stack md:grid-cols-12 md:gap-block">
             <div className="flex flex-col gap-stack md:col-span-5">
               <div className="flex items-center gap-4">

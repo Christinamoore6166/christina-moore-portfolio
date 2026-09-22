@@ -54,7 +54,7 @@ const RULES = [
   "Never white text on rose. Chestnut on rose is the pairing.",
   "Tan is a fill. It never carries type.",
   "Olive has one job: the hover underline and the active-nav marker.",
-  "No rounded cards, no drop shadows. Depth comes from colour steps and hairlines.",
+  "Radius and shadow are scoped to photo cards, glass panels, the lightbox image and pill controls. Everything else stays square and flat.",
   "Photography is full-bleed or hard against the gutter. Nothing floats.",
   "Display type is a graphic object. It overlaps, crops against, or sits on top of an image.",
   "A large statement is followed by a dense index. The contrast is the effect.",
@@ -659,7 +659,7 @@ export default function StyleGuidePage() {
         id="space"
         n="04"
         title="Space and shape"
-        intro="Four rhythm tokens on top of the 4px base scale. Radii stop at 4px. There are no shadow tokens at all."
+        intro="Four rhythm tokens on top of the 4px base scale. Radius and the one shadow token are reserved for photo cards, glass panels, the lightbox image and pill controls — everything else stays square, flat, and edged with a hairline."
       >
         <Sub title="Rhythm" note="Fluid. Each bar is the token at this viewport." />
         <ul className="mb-block border-t border-rule">

@@ -202,7 +202,7 @@ export const semantic: SemanticToken[] = [
   { utility: "accent", light: "chestnut", dark: "rose", role: "Headings, emphasis" },
   { utility: "label", light: "rose", dark: "chestnut", role: "Label bar fill" },
   { utility: "on-label", light: "chestnut", dark: "inkInvert", role: "Text on a label bar" },
-  { utility: "numeral", light: "tan", dark: "tan", role: "Numeral block fill" },
+  { utility: "numeral", light: "chestnut", dark: "tan", role: "Numeral block fill" },
   { utility: "on-numeral", light: "espresso", dark: "espresso", role: "The numeral itself" },
   { utility: "hover", light: "clay", dark: "espressoLift", role: "Hover fill" },
   { utility: "on-hover", light: "espresso", dark: "clay", role: "Text on a hover fill" },

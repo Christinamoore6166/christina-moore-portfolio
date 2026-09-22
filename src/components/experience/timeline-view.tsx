@@ -4,6 +4,7 @@ import { useId, useState, type CSSProperties } from "react";
 import { Plus } from "lucide-react";
 import { RESUME, type Role } from "@/data/resume";
 import { cn } from "@/lib/utils";
+import { Reveal } from "@/components/motion/reveal";
 import { useDrawIn } from "./use-draw-in";
 
 /* Gap between one row drawing in and the next, in ms. */
@@ -29,7 +30,7 @@ export function TimelineView() {
     <ol ref={ref} className="group/draw relative">
       <span
         aria-hidden="true"
-        className="absolute inset-y-0 left-0 w-px origin-top bg-ink-soft transition-transform duration-[1200ms] ease-out motion-reduce:transition-none group-data-[drawn=out]/draw:scale-y-0"
+        className="timeline-line motion-reduce:transition-none group-data-[drawn=out]/draw:scale-y-0"
       />
       {roles.map((role, i) => (
         <TimelineRow key={role.employer} role={role} delay={i * ROW_STAGGER} />
@@ -94,7 +95,11 @@ function TimelineRow({ role, delay }: { role: Role; delay: number }) {
           style={{ gridTemplateRows: open ? "1fr" : "0fr" } as CSSProperties}
         >
           <div inert={!open} className="min-h-0 overflow-hidden">
-            <ul className="flex max-w-prose flex-col gap-3 pb-6">
+            <Reveal
+              as="ul"
+              variant="stagger"
+              className="flex max-w-prose flex-col gap-3 pb-6"
+            >
               {role.bullets.map((bullet) => (
                 <li
                   key={bullet}
@@ -103,7 +108,7 @@ function TimelineRow({ role, delay }: { role: Role; delay: number }) {
                   {bullet}
                 </li>
               ))}
-            </ul>
+            </Reveal>
           </div>
         </div>
       </div>
@@ -113,13 +118,5 @@ function TimelineRow({ role, delay }: { role: Role; delay: number }) {
 
 /* The dot on the rule. Olive while its row is open: the active marker. */
 function Node({ active = false }: { active?: boolean }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "absolute left-0 top-6 size-2.5 -translate-x-1/2 rounded-full border transition-ink",
-        active ? "border-mark bg-mark" : "border-ink-soft bg-page",
-      )}
-    />
-  );
+  return <span aria-hidden="true" data-active={active} className="timeline-dot" />;
 }
