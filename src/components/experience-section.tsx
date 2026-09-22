@@ -11,17 +11,23 @@ import { ExperienceTabs } from "@/components/experience/experience-tabs";
  * block, section chip, display heading, two-column grid); the intro
  * columns stay empty until copy for them is supplied.
  *
- * The skyline is busy and the ground tint is light, so the content sits
+ * The backdrop is busy and the ground tint is light, so the content sits
  * on a page-colour plate and the photo frames it: a strip above and
  * below, and the gutters at the sides from md up. On the phone the plate
  * bleeds to the edges so the copy lines up with every other section.
+ *
+ * The backdrop was the nashville skyline until About took that photo as
+ * its own full-width band; two pale skylines 120px apart read as a
+ * mistake. tablescape-wide is the same photograph as the tablescape
+ * band inside Branding, but the two are tinted differently — pale ground
+ * here, espresso there — so they do not read as a repeat.
  */
 export function ExperienceSection() {
   const { section } = RESUME;
 
   return (
     <BackdropBand
-      image={findStock("nashville")}
+      image={findStock("tablescape-wide")}
       tint="ground"
       opacity={0.35}
       className="border-t border-rule py-block"

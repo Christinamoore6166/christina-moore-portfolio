@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import type { StockImage } from "@/content/images";
-import { blurProps } from "@/lib/images";
+import { blurProps, stockSrc } from "@/lib/images";
 
 type Tint = "ground" | "espresso";
 
@@ -12,6 +12,13 @@ interface BackdropBandProps {
   opacity: number;
   /** CSS height, e.g. "40vh". Omit to size to the children instead. */
   height?: string;
+  /**
+   * Scroll-linked drift. The photo is laid out 12% taller than the band
+   * and offset by half of that, so the travel never exposes an edge.
+   * Does nothing where animation-timeline is unsupported, and is switched
+   * off under reduced motion.
+   */
+  drift?: boolean;
   children: ReactNode;
   className?: string;
 }
@@ -40,30 +47,45 @@ export function BackdropBand({
   tint,
   opacity,
   height,
+  drift = false,
   children,
   className,
 }: BackdropBandProps) {
-  const src = "/" + image.jpg.replace(/^public\//, "");
+  const src = stockSrc(image);
   const style = height ? ({ height } as CSSProperties) : undefined;
 
   return (
     <div
       className={
         "relative isolate flex w-full items-center justify-center overflow-hidden" +
+        /* The band clips, so it has to own the view timeline: a view()
+           on the photo itself would measure against this box rather
+           than the page and never move. */
+        (drift ? " drift-frame" : "") +
         (className ? ` ${className}` : "")
       }
       style={style}
     >
-      <Image
-        src={src}
-        alt={image.alt}
-        fill
-        sizes={SIZES}
-        loading="lazy"
-        decoding="async"
-        {...blurProps(image)}
-        className="-z-20 object-cover"
-      />
+      {/* Only the drifting variant is oversized. A static band keeps
+          inset-0 so its crop is unchanged. */}
+      <div
+        className={
+          drift
+            ? "drift absolute inset-x-0 -top-[6%] -z-20 h-[112%]"
+            : "absolute inset-0 -z-20"
+        }
+      >
+        <Image
+          src={src}
+          alt={image.alt}
+          fill
+          sizes={SIZES}
+          loading="lazy"
+          decoding="async"
+          {...blurProps(image)}
+          className="object-cover"
+        />
+      </div>
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10"

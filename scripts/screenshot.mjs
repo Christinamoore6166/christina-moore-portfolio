@@ -107,7 +107,13 @@ async function shoot(name, width, height, { dark = false, sel = null } = {}) {
     mobile: width < 768,
   });
   await send("Emulation.setEmulatedMedia", {
-    features: [{ name: "prefers-color-scheme", value: dark ? "dark" : "light" }],
+    features: [
+      { name: "prefers-color-scheme", value: dark ? "dark" : "light" },
+      {
+        name: "prefers-reduced-motion",
+        value: process.env.SHOT_REDUCED ? "reduce" : "no-preference",
+      },
+    ],
   });
   const loaded = waitFor("Page.loadEventFired");
   await send("Page.navigate", { url });

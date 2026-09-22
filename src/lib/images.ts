@@ -1,10 +1,15 @@
-import { images, type ImageAsset } from "@/content/images";
+import { images, type ImageAsset, type StockImage } from "@/content/images";
 
 type Format = "webp" | "jpg" | "thumbnail";
 
 /** Public URL for an asset. images.ts stores disk paths under public/. */
 export function imageSrc(asset: ImageAsset, format: Format = "webp"): string {
   return "/" + asset[format].replace(/^public\//, "");
+}
+
+/** Public URL for a backdrop. Stock entries only carry a jpg. */
+export function stockSrc(image: StockImage): string {
+  return "/" + image.jpg.replace(/^public\//, "");
 }
 
 export function findImages(

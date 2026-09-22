@@ -569,6 +569,27 @@
   }
 }
 
+/* Button: the trailing arrow steps up and to the right. Paired with a
+   background that moves to --primary-hover, which is a colour change and
+   so stays on transition-ink rather than being switched off below. */
+@utility hover-nudge {
+  & svg {
+    transition: translate var(--duration-base) var(--ease-out);
+  }
+  &:hover svg,
+  &:focus-visible svg {
+    translate: 2px -2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    & svg,
+    &:hover svg,
+    &:focus-visible svg {
+      transition: none;
+      translate: none;
+    }
+  }
+}
+
 /* Anything: drops to 80% on hover. For thumbnails in a dense grid. */
 @utility hover-dim {
   transition: opacity var(--duration-fast) var(--ease-standard);
@@ -707,6 +728,14 @@
   backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid var(--color-glass-edge);
   box-shadow: var(--shadow-glass);
+
+  /* Dark theme flips the surface, not the caller. --ink is already cream
+     here, so a light pane would drop every panel below AA. glass-dark is
+     a deliberate dark pane on a light page and is left alone. */
+  @variant dark {
+    background-color: var(--color-glass-dark);
+    border-color: rgb(255 255 255 / 0.1);
+  }
 }
 
 @utility glass-dark {
@@ -727,6 +756,19 @@
   }
   .glass-dark {
     background-color: rgb(47 33 28 / 0.9);
+  }
+  [data-theme="dark"] .glass {
+    background-color: rgb(47 33 28 / 0.9);
+  }
+}
+@media (prefers-color-scheme: dark) {
+  @supports not (
+    (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+  ) {
+    :where(:not([data-theme="light"], [data-theme="light"] *)).glass,
+    :where(:not([data-theme="light"], [data-theme="light"] *)) .glass {
+      background-color: rgb(47 33 28 / 0.9);
+    }
   }
 }
 
@@ -780,9 +822,19 @@
         clip-path: inset(0 0 0 0);
       }
     }
+    /* The clipping wrapper owns the timeline and the drifting child
+       consumes it by name. A bare view() on the child would resolve
+       against the wrapper instead of the page: overflow: hidden makes an
+       element a scroll container, and one that never scrolls hands back
+       a frozen progress value. Verified: without this the translate sat
+       at -5.36% at every scroll position. */
+    .drift-frame {
+      view-timeline-name: --drift-frame;
+      view-timeline-axis: block;
+    }
     .drift {
       animation: drift linear both;
-      animation-timeline: view();
+      animation-timeline: --drift-frame;
       animation-range: entry 0% exit 100%;
     }
     .band-in {
@@ -812,6 +864,79 @@
   }
 }
 
+/* ---------- Hero entrance ----------
+   One pass, about 1.1s end to end, played on load. It is delay-driven
+   rather than observer-driven because the hero is above the fold: there
+   is nothing to wait for. Each step sits on its own element so nothing
+   competes for the single animation property, and the portrait's drift
+   lives on a wrapper for the same reason.
+
+   hero-unmask repeats reveal-mask's geometry with a square inset: the
+   arch already supplies the portrait's shape, and a rounded clip inside
+   it would round off the arch's square bottom corners. */
+@layer components {
+  @keyframes hero-rise {
+    from {
+      opacity: 0;
+      translate: 0 14px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  /* Top inset only, so the line wipes open upward from its baseline.
+     The other three sides stay negative so display glyphs with leading
+     under 1 are never clipped at the end of the run. */
+  @keyframes hero-line {
+    from {
+      clip-path: inset(100% -6% -18% -6%);
+    }
+    to {
+      clip-path: inset(-18% -6% -18% -6%);
+    }
+  }
+  @keyframes hero-slide {
+    from {
+      opacity: 0;
+      translate: 12px 0;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  @keyframes hero-unmask {
+    from {
+      clip-path: inset(12% 0 12% 0);
+      scale: 1.06;
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+      scale: 1;
+    }
+  }
+
+  .hero-eyebrow {
+    animation: hero-rise 520ms var(--ease-out) 0ms both;
+  }
+  .hero-name {
+    animation: hero-line 600ms var(--ease-out) 120ms both;
+  }
+  .hero-accent {
+    animation: hero-slide 600ms var(--ease-out) 240ms both;
+  }
+  .hero-portrait {
+    animation: hero-unmask 720ms var(--ease-out) 340ms both;
+  }
+  .hero-lead {
+    animation: hero-rise 440ms var(--ease-out) 600ms both;
+  }
+  .hero-action {
+    animation: hero-rise 440ms var(--ease-out) 660ms both;
+  }
+}
+
 /* The reduced-motion branch stays authoritative. Unlayered, so it wins
    over everything above without fighting on specificity. */
 @media (prefers-reduced-motion: reduce) {
@@ -820,13 +945,23 @@
   .band-in,
   .stagger > *,
   .photo-card img,
-  .photo-card:hover img {
+  .photo-card:hover img,
+  .hero-eyebrow,
+  .hero-name,
+  .hero-accent,
+  .hero-portrait,
+  .hero-lead,
+  .hero-action {
     animation: none !important;
     transition: none !important;
     clip-path: none !important;
     scale: 1 !important;
     translate: none !important;
     filter: none !important;
+    /* The hero steps hold their finished frame with animation-fill-mode,
+       so opacity has to be restored explicitly once the animation is
+       dropped. The others are already opaque. */
+    opacity: 1 !important;
   }
 }
 
