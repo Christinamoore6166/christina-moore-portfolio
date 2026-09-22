@@ -18,18 +18,22 @@ import { ExperienceTabs } from "@/components/experience/experience-tabs";
  *
  * The backdrop was the nashville skyline until About took that photo as
  * its own full-width band; two pale skylines 120px apart read as a
- * mistake. tablescape-wide is the same photograph as the tablescape
- * band inside Branding, but the two are tinted differently — pale ground
- * here, espresso there — so they do not read as a repeat.
+ * mistake. tablescape-wide was tried next and is worse: it is the same
+ * photograph as the tablescape band inside Branding, one screen further
+ * down, and both read pale gold. buttercream-wide is a different
+ * photograph from the buttercream in the cake band, that band is two
+ * sections away, and it runs at espresso 0.72 against pale ground here.
+ * Being an abstract texture it also survives this band's crop, which is
+ * far taller than the 16:9 source.
  */
 export function ExperienceSection() {
   const { section } = RESUME;
 
   return (
     <BackdropBand
-      image={findStock("tablescape-wide")}
+      image={findStock("buttercream-wide")}
       tint="ground"
-      opacity={0.35}
+      opacity={0.12}
       className="border-t border-rule py-block"
     >
       <section id={section.id} className="frame scroll-mt-14">
