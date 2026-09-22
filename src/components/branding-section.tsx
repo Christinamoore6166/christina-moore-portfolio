@@ -1,45 +1,24 @@
 import { SITE } from "@/content/site";
-import { findImages } from "@/lib/images";
-import { findStock, type ImageAsset } from "@/content/images";
+import { findStock } from "@/content/images";
+import { events } from "@/data/events";
 import { Reveal } from "@/components/motion/reveal";
 import { MarqueeBand } from "@/components/motion/marquee-band";
-import { EventFeature } from "@/components/event-feature";
+import { EventShowcase } from "@/components/event-showcase";
 import { BackdropBand } from "@/components/backdrop-band";
 
 const branding = SITE.sections.find((s) => s.id === "branding")!;
 
-/** Selects specific numbered photos for an event, in the given order. */
-function pick(event: string, numbers: number[]): ImageAsset[] {
-  const all = findImages("branding", event);
-  return numbers.map((n) => {
-    const suffix = `-${String(n).padStart(2, "0")}.webp`;
-    const found = all.find((img) => img.webp.endsWith(suffix));
-    if (!found) {
-      throw new Error(`Missing branding/${event} image number ${n}`);
-    }
-    return found;
-  });
-}
-
-/** The photo the manifest flags as the event's feature image. */
-function featured(event: string): ImageAsset {
-  const found = findImages("branding", event).find((img) => img.featured);
-  if (!found) {
-    throw new Error(`No featured image flagged for branding/${event}`);
-  }
-  return found;
-}
-
 /**
- * Section 03. One module, EventFeature, repeated per event: the feature
- * image with the event name overhanging it, then the supporting photos.
- * Friendsgiving is the page's one collage; the others run the numbered
- * strip. White Elephant photo 4 is byte-identical to photo 2, not a
- * second angle, so it is left out.
+ * Section 03. The one section that runs the timed showcase rather than
+ * the EventFeature module: a wide featured photo per event over a rail
+ * of every photo that event has, advancing on a six-second timer. The
+ * roadmap adds this deliberately for this section only; everything else
+ * on the page keeps EventFeature.
+ *
+ * Photo selection and the headings live in src/data/events.ts. The
+ * intro block above is unchanged.
  */
 export function BrandingSection() {
-  const [galentines, friendsgiving, whiteElephant] = branding.subItems ?? [];
-
   return (
     <>
       <MarqueeBand
@@ -47,7 +26,7 @@ export function BrandingSection() {
       />
       <section
         id="branding"
-        className="frame scroll-mt-14 border-t border-rule py-section"
+        className="theme-surface frame scroll-mt-14 border-t border-rule py-section"
       >
         <Reveal className="grid gap-stack md:grid-cols-12 md:gap-block">
           <div className="flex flex-col gap-stack md:col-span-5">
@@ -83,29 +62,11 @@ export function BrandingSection() {
         </Reveal>
 
         <div className="mt-block flex flex-col gap-section">
-          <Reveal>
-            <EventFeature
-              title={galentines ?? ""}
-              featureImage={featured("galentines")}
-              strip={pick("galentines", [5, 14, 17, 18, 26])}
-              priority
-            />
-          </Reveal>
-          <Reveal delay={90}>
-            <EventFeature
-              title={friendsgiving ?? ""}
-              variant="collage"
-              featureImage={featured("friendsgiving")}
-              strip={pick("friendsgiving", [5, 10, 13, 33, 35])}
-            />
-          </Reveal>
-          <Reveal delay={180}>
-            <EventFeature
-              title={whiteElephant ?? ""}
-              featureImage={featured("white-elephant")}
-              strip={pick("white-elephant", [2, 3, 5])}
-            />
-          </Reveal>
+          {events.map((event, i) => (
+            <Reveal key={event.slug} delay={i * 90}>
+              <EventShowcase event={event} />
+            </Reveal>
+          ))}
         </div>
       </section>
     </>

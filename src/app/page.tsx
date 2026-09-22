@@ -5,6 +5,7 @@ import { BrandingSection } from "@/components/branding-section";
 import { OtherSection } from "@/components/other-section";
 import { ContactFooter } from "@/components/contact-footer";
 import { SiteNav } from "@/components/site-nav";
+import { LightboxProvider } from "@/components/lightbox-provider";
 import { SITE } from "@/content/site";
 import { RESUME } from "@/data/resume";
 
@@ -16,7 +17,7 @@ export default function Home() {
     .sort((a, b) => a.number.localeCompare(b.number));
 
   return (
-    <>
+    <LightboxProvider>
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-page focus:px-4 focus:py-2 focus:text-ink"
@@ -36,6 +37,6 @@ export default function Home() {
         </main>
       </div>
       <ContactFooter />
-    </>
+    </LightboxProvider>
   );
 }

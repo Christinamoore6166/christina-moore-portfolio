@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import { createPortal } from "react-dom";
+import { type CSSProperties } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { ImageAsset } from "@/content/images";
 import { blurProps, imageSrc } from "@/lib/images";
+import { useLightbox } from "@/components/lightbox-provider";
 
 /** The strip is numbered 01 to 05; anything longer is a mistake upstream. */
 export const STRIP_MAX = 5;
@@ -51,10 +50,11 @@ const number = (i: number) => String(i + 1).padStart(2, "0");
  * numbered strip (five across on desktop, scroll-snapped on the phone with
  * the next tile peeking) or as the rotated collage.
  *
- * Every image is a button that opens the full-size view. The dialog here
- * mirrors the lightbox component's behaviour exactly (escape, arrow keys,
- * focus trap, scroll lock, focus restore) and is portalled to <body> so
- * an ancestor's reveal transform can never become its containing block.
+ * Every image is a button that opens the full-size view. The dialog this
+ * module used to own was replaced by the page-level LightboxProvider,
+ * one native <dialog> for the whole page: escape, the focus trap and
+ * focus restore now come from showModal(), and the scroll lock and
+ * arrow-key navigation moved across with it rather than being dropped.
  * Section entry is left to the <Reveal> that wraps each module.
  */
 export function EventFeature({
@@ -71,78 +71,8 @@ export function EventFeature({
   }
 
   const all = [featureImage, ...strip];
-  const count = all.length;
-
-  const [index, setIndex] = useState<number | null>(null);
-  const triggerRef = useRef<HTMLElement | null>(null);
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-  const closeRef = useRef<HTMLButtonElement | null>(null);
-
-  const open = (trigger: HTMLElement, i: number) => {
-    triggerRef.current = trigger;
-    setIndex(i);
-  };
-  const close = useCallback(() => {
-    setIndex(null);
-    triggerRef.current?.focus();
-  }, []);
-  const next = () => setIndex((i) => (i === null ? i : (i + 1) % count));
-  const prev = () =>
-    setIndex((i) => (i === null ? i : (i - 1 + count) % count));
-
-  const isOpen = index !== null;
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
-    const prevOverflow = document.body.style.overflow;
-    const prevPadding = document.body.style.paddingRight;
-    document.body.style.overflow = "hidden";
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    closeRef.current?.focus();
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        close();
-        return;
-      }
-      if (e.key === "ArrowRight") {
-        setIndex((i) => (i === null ? i : (i + 1) % count));
-      }
-      if (e.key === "ArrowLeft") {
-        setIndex((i) => (i === null ? i : (i - 1 + count) % count));
-      }
-      if (e.key === "Tab") {
-        const dialog = dialogRef.current;
-        if (!dialog) return;
-        const focusable = dialog.querySelectorAll<HTMLElement>("button");
-        if (focusable.length === 0) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    window.addEventListener("keydown", onKey);
-
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPadding;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [isOpen, count, close]);
-
-  const current = index !== null ? all[index] : null;
+  const openLightbox = useLightbox();
+  const open = (i: number) => openLightbox(all, i);
 
   return (
     <div>
@@ -155,7 +85,7 @@ export function EventFeature({
         </h3>
         <button
           type="button"
-          onClick={(e) => open(e.currentTarget, 0)}
+          onClick={() => open(0)}
           aria-label={`Open full size: ${featureImage.alt}`}
           className="hover-zoom block aspect-[4/3] max-h-[70vh] w-full bg-placeholder md:aspect-[21/9]"
         >
@@ -196,7 +126,7 @@ export function EventFeature({
               >
                 <button
                   type="button"
-                  onClick={(e) => open(e.currentTarget, i + 1)}
+                  onClick={() => open(i + 1)}
                   aria-label={`Open full size: ${img.alt}`}
                   className="hover-zoom block aspect-[4/3] w-full bg-placeholder"
                 >
@@ -229,7 +159,7 @@ export function EventFeature({
             >
               <button
                 type="button"
-                onClick={(e) => open(e.currentTarget, i + 1)}
+                onClick={() => open(i + 1)}
                 aria-label={`Open full size: ${img.alt}`}
                 className="hover-zoom block aspect-[4/5] w-full bg-placeholder"
               >
@@ -253,69 +183,6 @@ export function EventFeature({
         </ol>
       )}
 
-      {current
-        ? createPortal(
-            <div
-              ref={dialogRef}
-              role="dialog"
-              aria-modal="true"
-              aria-label={current.alt}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-inverse/95 p-gutter"
-              onClick={close}
-            >
-              <button
-                ref={closeRef}
-                type="button"
-                onClick={close}
-                aria-label="Close"
-                className="absolute top-4 right-4 text-on-inverse transition-ink hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-on-inverse"
-              >
-                <X aria-hidden="true" className="size-8" />
-              </button>
-              {count > 1 ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      prev();
-                    }}
-                    aria-label="Previous image"
-                    className="absolute top-1/2 left-4 -translate-y-1/2 text-on-inverse transition-ink hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-on-inverse"
-                  >
-                    <ChevronLeft aria-hidden="true" className="size-8" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      next();
-                    }}
-                    aria-label="Next image"
-                    className="absolute top-1/2 right-4 -translate-y-1/2 text-on-inverse transition-ink hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-on-inverse"
-                  >
-                    <ChevronRight aria-hidden="true" className="size-8" />
-                  </button>
-                </>
-              ) : null}
-              <div
-                className="max-h-[85vh] max-w-4xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Image
-                  src={imageSrc(current)}
-                  alt={current.alt}
-                  width={current.width}
-                  height={current.height}
-                  sizes="90vw"
-                  {...blurProps(current)}
-                  className="max-h-[85vh] w-auto object-contain"
-                />
-              </div>
-            </div>,
-            document.body,
-          )
-        : null}
     </div>
   );
 }

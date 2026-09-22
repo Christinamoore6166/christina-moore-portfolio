@@ -118,14 +118,39 @@ export function useInView(
   return inView;
 }
 
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (cb: () => void) => unknown;
+};
+
+function hasViewTransitions(): boolean {
+  const doc = document as ViewTransitionDocument;
+  return typeof doc.startViewTransition === "function";
+}
+
 /** Runs a DOM update inside a View Transition where the browser has one. */
 export function withViewTransition(update: () => void) {
-  const doc = document as Document & {
-    startViewTransition?: (cb: () => void) => unknown;
-  };
-  if (typeof doc.startViewTransition === "function") {
-    doc.startViewTransition(update);
+  const doc = document as ViewTransitionDocument;
+  if (hasViewTransitions()) {
+    doc.startViewTransition!(update);
   } else {
     update();
   }
+}
+
+/* Support does not change over a session, so there is nothing to
+   subscribe to. A store rather than state set from an effect for the
+   same reason as usePrefersReducedMotion: the first client render has
+   the real answer already, and nothing re-renders on mount. The server
+   snapshot says yes, so server markup carries no fallback class and
+   hydration matches on the browsers that have the feature. */
+const subscribeNever = () => () => {};
+
+/**
+ * Whether the browser can run the showcase's card-to-feature morph.
+ * Deliberately the same test withViewTransition makes, so a component
+ * choosing a fallback animation can never disagree with the helper
+ * about which path is live and play both.
+ */
+export function useHasViewTransitions(): boolean {
+  return useSyncExternalStore(subscribeNever, hasViewTransitions, () => true);
 }

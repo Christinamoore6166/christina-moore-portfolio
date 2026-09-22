@@ -705,11 +705,20 @@
   }
 
   /* A half-step, not a pivot: cream on cream so a gallery reads apart
-     from the section above it. Ink is unchanged, so nothing else moves. */
+     from the section above it. Ink is unchanged, so nothing else moves.
+
+     The step has to follow the theme. Holding --page at the light
+     surface in dark mode put cream behind cream ink and all but erased
+     the section's intro paragraph; espresso-raised is the same half-step
+     measured from the dark ground instead. */
   .theme-surface {
     --page: var(--color-surface);
 
     background-color: var(--page);
+
+    @variant dark {
+      --page: var(--color-espresso-raised);
+    }
   }
 }
 
@@ -861,6 +870,86 @@
       scale: 1.04;
       filter: saturate(1.08);
     }
+  }
+}
+
+/* ---------- Event showcase and lightbox ----------
+   Section 03 only. The rest of the page keeps the EventFeature module. */
+@layer components {
+  /* The oversized slide numeral. Outlined in invert ink rather than the
+     accent: it sits on open photography, and chestnut disappears into
+     the darker parts of a tablescape. No standard property exists for
+     this, so the prefixed one is the whole declaration, not half a
+     pair. */
+  .text-outline {
+    /* The stroke alone vanishes into a bright photo, and a dark stroke
+       vanishes into a dark one. A cream stroke over a barely-there
+       espresso fill reads on both: the fill gives the glyph body
+       against a light tablescape, the stroke carries it against a dark
+       one. */
+    color: rgb(47 33 28 / 0.22);
+    -webkit-text-stroke: 2px var(--color-ink-invert);
+  }
+
+  /* The six-second bar on the active card. Its duration is set inline
+     from ADVANCE_MS so the two can never drift apart, and the element
+     is keyed on the active index so the run restarts on every swap. */
+  @keyframes card-progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  .card-progress {
+    animation: card-progress linear forwards;
+  }
+
+  /* Fallback for browsers without View Transitions: the featured photo
+     is remounted on each swap and fades in. Applied only when
+     startViewTransition is missing, so it never doubles the morph. */
+  @keyframes showcase-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .showcase-fade {
+    animation: showcase-fade var(--duration-base) var(--ease-standard) both;
+  }
+}
+
+/* The morph itself. Matched view-transition-names animate position and
+   size by default; this only sets the pace to the site's own. */
+::view-transition-group(*) {
+  animation-duration: var(--duration-slow);
+  animation-timing-function: var(--ease-out);
+}
+
+/* One native dialog for the page. showModal() supplies escape, the
+   focus trap and focus restore; the backdrop is styled here. */
+.lightbox::backdrop {
+  background-color: rgb(47 33 28 / 0.6);
+  backdrop-filter: blur(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-progress,
+  .showcase-fade {
+    animation: none !important;
+  }
+  /* Kills the morph outright, including on a manual card click, so the
+     swap is instant rather than merely quick. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  .lightbox::backdrop {
+    backdrop-filter: none;
   }
 }
 
