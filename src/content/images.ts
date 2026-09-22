@@ -391,7 +391,10 @@ export const images: ImageAsset[] = [
     width: 2400,
     height: 1800,
     blur: 'data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAADwAQCdASoMAAkAA4BaJZACdAEUUkyFAwAA/qN/QyLFhb3xcfU2k0UisAlrHPirbxWtzKLph/p8DlmbweVvrEb79SmleAxCiXt3oAAA',
-    alt: 'Row of wine bottles with custom pink Galentines labels lined up along a window overlooking the city',
+    /* Verified against the full 2400x1800 frame on Sep 22, 2026. The
+       provisional text here described a row of wine bottles at a window,
+       which is a different photo in this set. */
+    alt: 'Overhead of a Galentine\'s table: red roses down a pink runner, scalloped plates with "Happy Galentine\'s Day" cards, gold forks and a glass of rosé',
   },
   {
     section: 'branding',
