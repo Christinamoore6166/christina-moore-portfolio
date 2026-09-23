@@ -64,11 +64,14 @@ export function AboutSection() {
 
       <div className="frame">
         <div className="mt-[7rem] grid gap-stack md:mt-0 md:grid-cols-12">
+          {/* The wrapper carries its own .drift-frame so the word reads
+              against its own scroll progress, not the backdrop's, and
+              the two planes separate. */}
           <div
             aria-hidden="true"
-            className="hidden md:col-start-1 md:col-end-2 md:row-start-1 md:flex md:items-center md:justify-center"
+            className="drift-frame hidden md:col-start-1 md:col-end-2 md:row-start-1 md:flex md:items-center md:justify-center"
           >
-            <span className="[writing-mode:vertical-rl] rotate-180 whitespace-nowrap font-display type-h1 uppercase tracking-[0.2em] text-ink-soft">
+            <span className="drift-slow [writing-mode:vertical-rl] rotate-180 whitespace-nowrap font-display type-h1 uppercase tracking-[0.2em] text-ink-soft">
               {about.number} &mdash; {about.title}
             </span>
           </div>

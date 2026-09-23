@@ -72,6 +72,13 @@ export function SiteNav({ sections }: { sections: NavSection[] }) {
       .filter((el): el is HTMLElement => el !== null);
     if (targets.length === 0) return;
 
+    /* Experience carries its espresso plate on a child div, not on the
+       section itself, so ask for either. Checking only the section left
+       the pill light over the one dark band on the page. */
+    const isDark = (el: Element) =>
+      el.classList.contains("theme-inverse") ||
+      el.querySelector(".theme-inverse") !== null;
+
     /* A section is current while it crosses a thin band 40% down the
        viewport, so the marker changes as a section heading arrives. */
     const io = new IntersectionObserver(
@@ -79,7 +86,7 @@ export function SiteNav({ sections }: { sections: NavSection[] }) {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             setActive(entry.target.id);
-            setOnDark(entry.target.classList.contains("theme-inverse"));
+            setOnDark(isDark(entry.target));
           }
         }
       },

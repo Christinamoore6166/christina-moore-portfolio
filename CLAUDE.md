@@ -44,3 +44,19 @@ VISUAL UPGRADE (Sep 2026)
 - The placeholders EXISTING HEADING and EXISTING ALT TEXT in the reference code are filled with the exact text already in this site. Never invent copy or alt text.
 - Edited photos, read only: C:\Users\custo\OneDrive\CLAUDE\Christina Personal\Personal Website\Website Photo References\Edited - Clean Bright
 - Never write any file into OneDrive.
+
+SETTLED DEVIATIONS FROM THE ROADMAP (Sep 2026)
+These five differ from docs/Visual-Enhancement-Roadmap.md on purpose. They
+were reviewed against the live site and accepted. Do not "fix" them back.
+- The Experience timeline rule draws in one shot on entry, not tied to
+  scroll progress with animation-timeline: view(). The roadmap named the
+  one-shot as the fallback; it is the shipped version.
+- Experience tab panels have no outgoing cross-fade. The incoming panel
+  reveals with its own stagger; the outgoing one is simply replaced.
+- The Skills tab is a stat grid, not animated skill bars. There were never
+  any levels to show, so there is nothing for a bar to represent.
+- The closing CTA panel is glass-dark, not glass. It sits over a tinted
+  linen photo, where light glass loses the text.
+- There is no <meta name="view-transition"> tag. It governs cross-document
+  transitions only; the showcase's document.startViewTransition() works
+  without it.

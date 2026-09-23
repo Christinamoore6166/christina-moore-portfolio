@@ -10,6 +10,11 @@ import { useDrawIn } from "./use-draw-in";
 /* Gap between one row drawing in and the next, in ms. */
 const ROW_STAGGER = 110;
 
+/* One delay, read twice: the row transitions on it, and its dot reads
+   --row-delay to time the arrival ring to the same beat. */
+const rowDelay = (ms: number) =>
+  ({ transitionDelay: `${ms}ms`, "--row-delay": `${ms}ms` }) as CSSProperties;
+
 /* Rows fade and lift in on the same duration and easing as <Reveal>;
    the container's data-drawn attribute (see useDrawIn) holds them out
    until the list enters the viewport. */
@@ -37,7 +42,7 @@ export function TimelineView() {
       ))}
       <li
         className={cn("relative pl-8 md:pl-12", ROW_DRAW)}
-        style={{ transitionDelay: `${roles.length * ROW_STAGGER}ms` }}
+        style={rowDelay(roles.length * ROW_STAGGER)}
       >
         <Node />
         <div className="flex flex-col gap-1 py-5">
@@ -60,10 +65,7 @@ function TimelineRow({ role, delay }: { role: Role; delay: number }) {
   const panelId = useId();
 
   return (
-    <li
-      className={cn("relative pl-8 md:pl-12", ROW_DRAW)}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
+    <li className={cn("relative pl-8 md:pl-12", ROW_DRAW)} style={rowDelay(delay)}>
       <Node active={open} />
       <div className="border-b border-rule">
         <button
@@ -116,7 +118,8 @@ function TimelineRow({ role, delay }: { role: Role; delay: number }) {
   );
 }
 
-/* The dot on the rule. Olive while its row is open: the active marker. */
+/* The dot on the rule. Coral once its row has arrived, olive while that
+   row is open: the active marker. Both live in .timeline-dot. */
 function Node({ active = false }: { active?: boolean }) {
   return <span aria-hidden="true" data-active={active} className="timeline-dot" />;
 }
