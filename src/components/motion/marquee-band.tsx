@@ -37,13 +37,23 @@ export function MarqueeBand({
   const feature = variant === "feature";
   const blush = feature && tone === "blush";
 
+  /* .text-outline strokes in cream by default, which is right over a
+     photo and invisible over these flat warm fills. Each band strokes
+     in the warm neighbour of its own fill instead: chestnut on coral,
+     terracotta on rose. */
+  const outlineStroke = !feature
+    ? ""
+    : blush
+      ? "[--outline-stroke:var(--color-chestnut)]"
+      : "[--outline-stroke:var(--color-terracotta)]";
+
   return (
     <div
       role="separator"
       aria-label={text}
       className={`overflow-hidden border-y border-rule ${
         blush ? "theme-blush bg-page" : "bg-label"
-      } ${feature ? "band-in py-6 md:py-10" : "py-4"} ${className}`}
+      } ${feature ? "band-in py-6 md:py-10" : "py-4"} ${outlineStroke} ${className}`}
     >
       <Marquee>
         <div

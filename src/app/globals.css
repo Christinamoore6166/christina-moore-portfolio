@@ -877,6 +877,24 @@
       animation-timeline: --drift-frame;
       animation-range: entry 0% exit 100%;
     }
+    /* A third of the travel, for the rotated margin word in About. It
+       moves against the backdrop photo rather than with it, which is
+       what makes the pair read as two planes; at the full 6% it
+       competes with the photo instead. Its own wrapper carries the
+       .drift-frame, so the two timelines are independent. */
+    @keyframes drift-slow {
+      from {
+        translate: 0 2%;
+      }
+      to {
+        translate: 0 -2%;
+      }
+    }
+    .drift-slow {
+      animation: drift-slow linear both;
+      animation-timeline: --drift-frame;
+      animation-range: entry 0% exit 100%;
+    }
     .band-in {
       animation: band-in linear both;
       animation-timeline: view();
@@ -917,9 +935,14 @@
        vanishes into a dark one. A cream stroke over a barely-there
        espresso fill reads on both: the fill gives the glyph body
        against a light tablescape, the stroke carries it against a dark
-       one. */
+       one.
+
+       The divider bands reuse this over a flat warm fill rather than a
+       photo, where cream all but disappears, so the stroke colour is a
+       variable. The default is the photographic case; the bands
+       override it (see marquee-band.tsx). */
     color: rgb(47 33 28 / 0.22);
-    -webkit-text-stroke: 2px var(--color-ink-invert);
+    -webkit-text-stroke: 2px var(--outline-stroke, var(--color-ink-invert));
   }
 
   /* The six-second bar on the active card. Its duration is set inline
@@ -976,15 +999,55 @@
     width: 0.625rem;
     height: 0.625rem;
     border-radius: var(--radius-full);
-    border: 1px solid var(--ink-soft);
-    background-color: var(--page);
+
+    /* The colour the dot settles on, and its base state: coral at rest,
+       olive while its own row is open, so the open row still reads as
+       the active one. Held in a variable because the arrival animation
+       below fills forwards, and a filled animation outranks any normal
+       declaration — a plain [data-active] rule could not repaint it,
+       but a custom property can, since the keyframe re-resolves it.
+
+       Coral is the base rather than the animated end state on purpose:
+       useDrawIn leaves data-drawn unset under reduced motion and with
+       no JS, and the fill is state, not motion. Both cases land here. */
+    --dot-fill: var(--accent);
+    border: 1px solid var(--dot-fill);
+    background-color: var(--dot-fill);
     transition:
       background-color var(--duration-base) var(--ease-standard),
       border-color var(--duration-base) var(--ease-standard);
   }
   .timeline-dot[data-active="true"] {
-    border-color: var(--mark);
-    background-color: var(--mark);
+    --dot-fill: var(--mark);
+  }
+
+  /* Held out with its row, then fills and throws one ring as that row
+     arrives. Timed off --row-delay, the same per-row delay the row
+     transitions on, so dot and text arrive together. */
+  [data-drawn="out"] .timeline-dot {
+    border-color: var(--ink-soft);
+    background-color: var(--page);
+  }
+  @keyframes dot-arrive {
+    from {
+      border-color: var(--ink-soft);
+      background-color: var(--page);
+      box-shadow: 0 0 0 0 transparent;
+    }
+    45% {
+      border-color: var(--dot-fill);
+      background-color: var(--dot-fill);
+      box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 30%, transparent);
+    }
+    to {
+      border-color: var(--dot-fill);
+      background-color: var(--dot-fill);
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+  [data-drawn="in"] .timeline-dot {
+    animation: dot-arrive var(--duration-slow) var(--ease-out) both;
+    animation-delay: var(--row-delay, 0ms);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1103,6 +1166,7 @@
 @media (prefers-reduced-motion: reduce) {
   .reveal-mask,
   .drift,
+  .drift-slow,
   .band-in,
   .stagger > *,
   .photo-card img,
