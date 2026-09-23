@@ -54,8 +54,19 @@ export function ExperienceTabs({ sectionId }: { sectionId: string }) {
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const i = RESUME.views.findIndex((v) => v.id === view);
+    const last = RESUME.views.length - 1;
+    /* Home and End jump to the ends, the way the tabs pattern expects;
+       the arrows wrap through the modulo below. */
     const next =
-      e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : null;
+      e.key === "ArrowRight"
+        ? i + 1
+        : e.key === "ArrowLeft"
+          ? i - 1
+          : e.key === "Home"
+            ? 0
+            : e.key === "End"
+              ? last
+              : null;
     if (next === null) return;
     e.preventDefault();
     const target =
