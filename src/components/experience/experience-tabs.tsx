@@ -101,7 +101,7 @@ export function ExperienceTabs({ sectionId }: { sectionId: string }) {
               tabIndex={active ? 0 : -1}
               onClick={() => select(v.id)}
               className={cn(
-                "relative rounded-pill px-5 py-2 type-small transition-ink",
+                "tap-target rounded-pill px-5 py-2 type-small transition-ink",
                 active ? "text-primary-foreground" : "text-ink-soft hover:text-ink",
               )}
             >

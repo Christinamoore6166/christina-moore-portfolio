@@ -58,7 +58,12 @@
   --color-terracotta: #b5482f;
   --color-coral: #e8a38a;
   --color-glass: rgb(247 243 239 / 0.55);
-  --color-glass-dark: rgb(47 33 28 / 0.45);
+  /* 0.6, not 0.45: the event-name plate is the only dark glass that sits
+     over full-bleed photography, and at 0.45 a bright frame dropped the
+     cream heading to 2.37:1, under the 3:1 a 53px heading needs. On an
+     espresso ground the extra tint is espresso over espresso, so every
+     other glass-dark surface looks exactly as it did. */
+  --color-glass-dark: rgb(47 33 28 / 0.6);
   --color-glass-edge: rgb(255 255 255 / 0.35);
 
   /* ---------- Type ---------- */
@@ -587,6 +592,21 @@
       transition: none;
       translate: none;
     }
+  }
+}
+
+/* Lifts a short control to a 44px touch target without moving a pixel
+   on screen. The overlay is vertical only, so it never reaches a
+   horizontally adjacent sibling; a stacked list needs real padding
+   instead, or neighbouring hit areas would overlap and steal taps. */
+@utility tap-target {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: calc(50% - 22px);
+    height: 44px;
   }
 }
 

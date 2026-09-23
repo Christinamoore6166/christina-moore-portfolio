@@ -34,6 +34,7 @@ export function SiteNav({ sections }: { sections: NavSection[] }) {
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [onDark, setOnDark] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
   const listId = useId();
   const rootRef = useRef<HTMLElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -88,6 +89,19 @@ export function SiteNav({ sections }: { sections: NavSection[] }) {
     return () => io.disconnect();
   }, [sections]);
 
+  /* Below md the pill sits at the end of the hero until it pins, which
+     leaves the dropdown less than its own height of room. Measured on
+     open rather than assumed, so the list opens upward only when it
+     would otherwise run past the bottom of the screen. */
+  useEffect(() => {
+    if (!open) return;
+    const list = listRef.current;
+    const button = buttonRef.current;
+    if (!list || !button) return;
+    const room = window.innerHeight - button.getBoundingClientRect().bottom;
+    setDropUp(list.offsetHeight + PIN_INSET > room);
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -131,7 +145,7 @@ export function SiteNav({ sections }: { sections: NavSection[] }) {
             aria-expanded={open}
             aria-controls={listId}
             onClick={() => setOpen((o) => !o)}
-            className="flex items-center gap-2 py-1 text-ink md:hidden"
+            className="tap-target flex items-center gap-2 py-1 text-ink md:hidden"
           >
             <span aria-hidden="true" className="h-0.5 w-4 bg-mark" />
             <span className="tabular-nums text-ink-soft">{current.number}</span>{" "}
@@ -146,7 +160,11 @@ export function SiteNav({ sections }: { sections: NavSection[] }) {
           <ol
             id={listId}
             ref={listRef}
-            className={`${open ? "flex" : "hidden"} absolute top-full right-0 mt-1 min-w-56 flex-col gap-1 border border-rule bg-page p-3 md:relative md:top-auto md:right-auto md:mt-0 md:flex md:min-w-0 md:flex-row md:items-center md:gap-6 md:border-0 md:p-0`}
+            className={`${open ? "flex" : "hidden"} ${
+              dropUp
+                ? "bottom-full mb-1 md:bottom-auto md:mb-0"
+                : "top-full mt-1 md:top-auto md:mt-0"
+            } absolute right-0 min-w-56 flex-col gap-1 border border-rule bg-page p-3 md:relative md:right-auto md:flex md:min-w-0 md:flex-row md:items-center md:gap-6 md:border-0 md:p-0`}
           >
             {/* One olive dash that slides under the active link. Hidden
                 below md, where the list is a stacked dropdown and each
@@ -164,7 +182,7 @@ export function SiteNav({ sections }: { sections: NavSection[] }) {
                     href={`#${s.id}`}
                     aria-current={isActive ? "location" : undefined}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center gap-2 py-1 transition-ink ${
+                    className={`flex items-center gap-2 py-3.5 transition-ink md:py-1 ${
                       isActive
                         ? "text-ink forced-colors:underline forced-colors:font-semibold"
                         : "text-ink-soft hover:text-ink"
